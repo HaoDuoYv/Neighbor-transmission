@@ -22,6 +22,7 @@ export class FileTransferService extends EventEmitter {
   private port: number = TCP_PORT
   private pendingTransfers: Map<string, PendingTransfer> = new Map()
   private activeTransfers: Set<string> = new Set()
+  private outgoingSockets: Map<string, Socket> = new Map()
   private savePath: string
 
   constructor(savePath: string) {
@@ -50,7 +51,22 @@ export class FileTransferService extends EventEmitter {
 
     socket.on('data', (data) => {
       buffer = Buffer.concat([buffer, data])
-      this.processBuffer(socket, buffer)
+      buffer = this.processBuffer(socket, buffer)
+    })
+
+    socket.on('close', () => {
+      // 清理该连接相关的 pendingTransfers
+      for (const [fileId, pending] of this.pendingTransfers) {
+        if (pending.writeStream) pending.writeStream.end()
+        pending.task.status = 'failed'
+        this.emit('transfer:error', { fileId, error: '连接断开' })
+        this.pendingTransfers.delete(fileId)
+        this.activeTransfers.delete(fileId)
+      }
+      // 清理 outgoingSockets 中引用此 socket 的条目
+      for (const [fileId, sock] of this.outgoingSockets) {
+        if (sock === socket) this.outgoingSockets.delete(fileId)
+      }
     })
 
     socket.on('error', (err) => {
@@ -58,35 +74,46 @@ export class FileTransferService extends EventEmitter {
     })
   }
 
-  private processBuffer(socket: Socket, buffer: Buffer) {
-    // 尝试解析 JSON 消息
-    const headerEnd = buffer.indexOf('\n')
-    if (headerEnd === -1) return
+  private processBuffer(socket: Socket, buffer: Buffer): Buffer {
+    while (buffer.length > 0) {
+      const headerEnd = buffer.indexOf('\n')
+      if (headerEnd === -1) break
 
-    try {
-      const header = JSON.parse(buffer.subarray(0, headerEnd).toString())
-      const remaining = buffer.subarray(headerEnd + 1)
+      try {
+        const header = JSON.parse(buffer.subarray(0, headerEnd).toString())
+        const remaining = buffer.subarray(headerEnd + 1)
 
-      switch (header.type) {
-        case 'file-request':
-          this.handleFileRequest(socket, header)
-          break
-        case 'file-accept':
-          this.handleFileAccept(header)
-          break
-        case 'file-reject':
-          this.handleFileReject(header)
-          break
-        case 'chunk':
-          this.handleChunk(socket, header, remaining)
-          break
-        case 'file-complete':
-          this.handleFileComplete(header)
-          break
+        switch (header.type) {
+          case 'file-request':
+            this.handleFileRequest(socket, header)
+            buffer = remaining
+            break
+          case 'file-accept':
+            this.handleFileAccept(header)
+            buffer = remaining
+            break
+          case 'file-reject':
+            this.handleFileReject(header)
+            buffer = remaining
+            break
+          case 'chunk':
+            this.handleChunk(socket, header, remaining)
+            buffer = remaining.subarray(header.size)
+            break
+          case 'file-complete':
+            this.handleFileComplete(header)
+            buffer = remaining
+            break
+          default:
+            buffer = remaining
+            break
+        }
+      } catch {
+        // 解析失败，等待更多数据
+        break
       }
-    } catch {
-      // 解析失败，等待更多数据
     }
+    return buffer
   }
 
   async sendFile(filePath: string, toDeviceIP: string, toDevicePort: number): Promise<TransferTask> {
@@ -128,6 +155,7 @@ export class FileTransferService extends EventEmitter {
       socket.write(request)
 
       this.activeTransfers.add(fileId)
+      this.outgoingSockets.set(fileId, socket)
 
       // 等待对方接受后开始传输
       this.pendingTransfers.set(fileId, {
@@ -142,6 +170,7 @@ export class FileTransferService extends EventEmitter {
       task.status = 'failed'
       this.emit('transfer:error', { fileId, error: err.message })
       this.activeTransfers.delete(fileId)
+      this.outgoingSockets.delete(fileId)
     })
 
     return task
@@ -184,11 +213,14 @@ export class FileTransferService extends EventEmitter {
     const pending = this.pendingTransfers.get(header.fileId)
     if (!pending) return
 
+    const socket = this.outgoingSockets.get(header.fileId)
+    if (!socket) return
+
     pending.task.status = 'transferring'
     this.emit('transfer:progress', pending.task)
 
     // 开始发送文件分片
-    this.sendFileChunks(header.fileId)
+    this.sendFileChunks(header.fileId, socket)
   }
 
   private handleFileReject(header: { fileId: string }) {
@@ -199,6 +231,7 @@ export class FileTransferService extends EventEmitter {
     this.emit('transfer:error', { fileId: header.fileId, error: '对方拒绝接收' })
     this.pendingTransfers.delete(header.fileId)
     this.activeTransfers.delete(header.fileId)
+    this.outgoingSockets.delete(header.fileId)
   }
 
   private handleChunk(socket: Socket, header: { fileId: string; chunkIndex: number; size: number }, data: Buffer) {
@@ -237,9 +270,10 @@ export class FileTransferService extends EventEmitter {
     this.emit('transfer:complete', pending.task)
     this.pendingTransfers.delete(header.fileId)
     this.activeTransfers.delete(header.fileId)
+    this.outgoingSockets.delete(header.fileId)
   }
 
-  private async sendFileChunks(fileId: string) {
+  private async sendFileChunks(fileId: string, socket: Socket) {
     const pending = this.pendingTransfers.get(fileId)
     if (!pending || !pending.task.filePath) return
 
@@ -254,12 +288,14 @@ export class FileTransferService extends EventEmitter {
         size: chunk.length
       }) + '\n'
 
-      // 实际发送需要通过 socket，这里简化处理
+      socket.write(header)
+      socket.write(chunk)
       chunkIndex++
     })
 
     readStream.on('end', () => {
-      // 发送完成信号
+      const complete = JSON.stringify({ type: 'file-complete', fileId }) + '\n'
+      socket.write(complete)
     })
   }
 
@@ -284,6 +320,7 @@ export class FileTransferService extends EventEmitter {
       if (pending.writeStream) pending.writeStream.end()
       this.pendingTransfers.delete(fileId)
       this.activeTransfers.delete(fileId)
+      this.outgoingSockets.delete(fileId)
       this.emit('transfer:progress', pending.task)
     }
   }
@@ -294,5 +331,6 @@ export class FileTransferService extends EventEmitter {
       if (pending.writeStream) pending.writeStream.end()
     }
     this.pendingTransfers.clear()
+    this.outgoingSockets.clear()
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="remote-transfer-page">
+  <div class="page remote-transfer-page">
     <div class="page-header">
       <h2>远程传输</h2>
       <el-button @click="openInBrowser">
@@ -27,31 +27,12 @@ function openInBrowser() {
 </script>
 
 <style scoped>
-.remote-transfer-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  background: #f5f7fa;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.page-header h2 {
-  font-size: 20px;
-  color: #303133;
-}
-
 .webview-container {
   flex: 1;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #e4e7ed;
+  border: 1px solid #eef0f4;
+  background: #fff;
 }
 
 .webview {

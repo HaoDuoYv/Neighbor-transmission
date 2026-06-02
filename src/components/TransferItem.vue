@@ -83,12 +83,25 @@ function formatProgress(progress: number): string {
   gap: 12px;
   padding: 12px 16px;
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e4e7ed;
+  border-radius: 10px;
+  border: 1px solid #eef0f4;
+  transition: all 0.2s;
 }
 
 .transfer-item:hover {
-  border-color: #c0c4cc;
+  border-color: #d0d5dd;
+}
+
+.transfer-item.completed {
+  border-left: 3px solid #10b981;
+}
+
+.transfer-item.failed {
+  border-left: 3px solid #ef4444;
+}
+
+.transfer-item.transferring {
+  border-left: 3px solid #4f6ef7;
 }
 
 .file-icon {
@@ -98,8 +111,8 @@ function formatProgress(progress: number): string {
   align-items: center;
   justify-content: center;
   background: #f5f7fa;
-  border-radius: 8px;
-  color: #909399;
+  border-radius: 10px;
+  color: #98a2b3;
 }
 
 .transfer-info {
@@ -110,7 +123,7 @@ function formatProgress(progress: number): string {
 .file-name {
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: #1a1d29;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -120,20 +133,20 @@ function formatProgress(progress: number): string {
   display: flex;
   gap: 8px;
   font-size: 12px;
-  color: #909399;
+  color: #98a2b3;
   margin-top: 4px;
 }
 
 .transfer-meta .success {
-  color: #67c23a;
+  color: #10b981;
 }
 
 .transfer-meta .error {
-  color: #f56c6c;
+  color: #ef4444;
 }
 
 .transfer-meta .cancelled {
-  color: #e6a23c;
+  color: #f59e0b;
 }
 
 .transfer-actions {

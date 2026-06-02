@@ -1,5 +1,5 @@
 <template>
-  <div class="settings-page">
+  <div class="page settings-page">
     <div class="page-header">
       <h2>设置</h2>
     </div>
@@ -97,33 +97,29 @@ async function saveSettings() {
 </script>
 
 <style scoped>
-.settings-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  background: #f5f7fa;
-  overflow-y: auto;
-}
-
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 20px;
-  color: #303133;
-}
-
 .settings-content {
-  max-width: 600px;
+  max-width: 560px;
 }
 
-.settings-section {
-  margin-bottom: 16px;
+.settings-content :deep(.el-card) {
+  border-radius: 10px;
+  border: 1px solid #eef0f4;
+  margin-bottom: 12px;
+}
+
+.settings-content :deep(.el-card__header) {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f2f5;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1d29;
+}
+
+.settings-content :deep(.el-card__body) {
+  padding: 20px;
 }
 
 .settings-footer {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="device-list-page">
+  <div class="page device-list-page">
     <div class="page-header">
       <h2>局域网设备</h2>
       <el-input
@@ -68,32 +68,12 @@ function handleToggleFavorite(device: Device) {
 </script>
 
 <style scoped>
-.device-list-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  background: #f5f7fa;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 20px;
-  color: #303133;
-}
-
 .device-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 12px;
   overflow-y: auto;
-  padding: 4px;
+  padding: 2px;
 }
 </style>

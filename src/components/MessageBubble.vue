@@ -96,11 +96,11 @@ function openFile() {
   padding: 10px 14px;
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .message-bubble.own .bubble-content {
-  background: #409eff;
+  background: linear-gradient(135deg, #4f6ef7, #6c5ce7);
   color: #fff;
 }
 
@@ -114,20 +114,20 @@ function openFile() {
 .bubble-content pre {
   margin: 0;
   padding: 8px;
-  background: #f5f5f5;
-  border-radius: 4px;
+  background: #f8f9fc;
+  border-radius: 6px;
   overflow-x: auto;
 }
 
 .bubble-content code {
-  font-family: 'Courier New', monospace;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 13px;
 }
 
 .bubble-content img {
   max-width: 240px;
   max-height: 240px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 }
 

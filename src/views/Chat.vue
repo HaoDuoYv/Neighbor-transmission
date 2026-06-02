@@ -180,25 +180,26 @@ function insertCode() {
 .chat-page {
   height: 100%;
   display: flex;
-  background: #f5f7fa;
+  background: #f0f2f5;
 }
 
 .conversation-list {
   width: 280px;
-  border-right: 1px solid #e4e7ed;
+  border-right: 1px solid #eef0f4;
   background: #fff;
   display: flex;
   flex-direction: column;
 }
 
 .list-header {
-  padding: 16px;
-  border-bottom: 1px solid #e4e7ed;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f2f5;
 }
 
 .list-header h3 {
-  font-size: 16px;
-  color: #303133;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1d29;
 }
 
 .list-content {
@@ -210,17 +211,19 @@ function insertCode() {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 12px 20px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
 }
 
 .conversation-item:hover {
-  background: #f5f7fa;
+  background: #f8f9fc;
 }
 
 .conversation-item.active {
-  background: #ecf5ff;
+  background: #eef2ff;
+  border-left-color: #4f6ef7;
 }
 
 .conversation-info {
@@ -228,18 +231,18 @@ function insertCode() {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .conversation-info .name {
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: #1a1d29;
 }
 
 .conversation-info .last-message {
   font-size: 12px;
-  color: #909399;
+  color: #98a2b3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -249,7 +252,8 @@ function insertCode() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #67c23a;
+  background: #10b981;
+  box-shadow: 0 0 3px rgba(16, 185, 129, 0.4);
 }
 
 .chat-area {
@@ -260,43 +264,45 @@ function insertCode() {
 }
 
 .chat-header {
-  padding: 16px;
+  padding: 14px 20px;
   background: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  border-bottom: 1px solid #eef0f4;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .chat-header h3 {
-  font-size: 16px;
-  color: #303133;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1d29;
 }
 
 .chat-header .status {
   font-size: 12px;
-  color: #909399;
+  color: #98a2b3;
 }
 
 .chat-header .status.online {
-  color: #67c23a;
+  color: #10b981;
 }
 
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  background: #f8f9fc;
 }
 
 .input-area {
   background: #fff;
-  border-top: 1px solid #e4e7ed;
+  border-top: 1px solid #eef0f4;
 }
 
 .toolbar {
-  padding: 8px 16px;
+  padding: 8px 16px 4px;
   display: flex;
   gap: 4px;
 }
@@ -310,7 +316,7 @@ function insertCode() {
 
 .input-footer .hint {
   font-size: 12px;
-  color: #909399;
+  color: #98a2b3;
 }
 
 .empty-chat {
@@ -320,6 +326,6 @@ function insertCode() {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: #909399;
+  color: #98a2b3;
 }
 </style>

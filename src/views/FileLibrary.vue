@@ -1,5 +1,5 @@
 <template>
-  <div class="file-library-page">
+  <div class="page file-library-page">
     <div class="page-header">
       <h2>文件库</h2>
       <div class="header-actions">
@@ -130,55 +130,37 @@ function closeContextMenu() {
 </script>
 
 <style scoped>
-.file-library-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  background: #f5f7fa;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 20px;
-  color: #303133;
-}
-
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .file-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
   overflow-y: auto;
+  padding: 2px;
 }
 
 .file-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 20px 16px 16px;
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e4e7ed;
+  border-radius: 10px;
+  border: 1px solid #eef0f4;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .file-card:hover {
-  border-color: #409eff;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+  border-color: #4f6ef7;
+  box-shadow: 0 4px 12px rgba(79, 110, 247, 0.1);
+  transform: translateY(-1px);
 }
 
 .file-icon {
@@ -187,9 +169,9 @@ function closeContextMenu() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ecf5ff;
-  border-radius: 8px;
-  color: #409eff;
+  background: #eef2ff;
+  border-radius: 10px;
+  color: #4f6ef7;
 }
 
 .file-info {
@@ -203,7 +185,7 @@ function closeContextMenu() {
 .file-name {
   font-size: 13px;
   font-weight: 500;
-  color: #303133;
+  color: #1a1d29;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -213,21 +195,26 @@ function closeContextMenu() {
 
 .file-meta {
   font-size: 11px;
-  color: #909399;
+  color: #98a2b3;
 }
 
 .context-menu {
   position: fixed;
   background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   z-index: 1000;
+  padding: 4px;
+  min-width: 120px;
 }
 
 .menu-item {
-  padding: 8px 16px;
+  padding: 8px 14px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1a1d29;
 }
 
 .menu-item:hover {
@@ -235,6 +222,10 @@ function closeContextMenu() {
 }
 
 .menu-item.danger {
-  color: #f56c6c;
+  color: #ef4444;
+}
+
+.menu-item.danger:hover {
+  background: #fef2f2;
 }
 </style>

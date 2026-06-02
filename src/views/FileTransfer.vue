@@ -1,5 +1,5 @@
 <template>
-  <div class="file-transfer-page">
+  <div class="page file-transfer-page">
     <div class="page-header">
       <h2>文件传输</h2>
       <el-radio-group v-model="filterStatus" size="small">
@@ -54,31 +54,12 @@ function handleOpen(transfer: TransferTask) {
 </script>
 
 <style scoped>
-.file-transfer-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  background: #f5f7fa;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 20px;
-  color: #303133;
-}
-
 .transfer-list {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   overflow-y: auto;
+  padding: 2px;
 }
 </style>

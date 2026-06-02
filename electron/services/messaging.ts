@@ -31,10 +31,20 @@ export class MessagingService extends EventEmitter {
       console.log(`[Messaging] WebSocket 监听端口 ${this.port}`)
     })
 
+    this.wss.on('error', (err) => {
+      console.error('[Messaging] WebSocket 服务器错误:', err)
+    })
+
     this.wss.on('connection', (ws, req) => {
       const deviceId = new URL(req.url || '', `ws://localhost:${this.port}`).searchParams.get('deviceId')
 
       if (deviceId) {
+        // Close old connection if exists
+        const oldWs = this.connections.get(deviceId)
+        if (oldWs) {
+          oldWs.removeAllListeners('close') // Remove close listener to prevent deleting new connection
+          oldWs.close()
+        }
         this.connections.set(deviceId, ws)
         console.log(`[Messaging] 设备 ${deviceId} 已连接`)
 
@@ -108,12 +118,11 @@ export class MessagingService extends EventEmitter {
 
   private handleAck(msgId: string) {
     const pending = this.pendingMessages.get(msgId)
-    if (pending) {
-      if (pending.timer) clearTimeout(pending.timer)
-      pending.message.status = 'sent'
-      this.pendingMessages.delete(msgId)
-      this.emit('message:sent', pending.message)
-    }
+    if (!pending) return // Already timed out or processed
+    this.pendingMessages.delete(msgId) // Delete first to prevent race condition
+    if (pending.timer) clearTimeout(pending.timer)
+    pending.message.status = 'sent'
+    this.emit('message:sent', pending.message)
   }
 
   sendMessage(toDevice: string, type: ChatMessage['type'], content: string, metadata?: Record<string, unknown>): ChatMessage {

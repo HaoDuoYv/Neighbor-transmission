@@ -4,7 +4,6 @@
     <div class="app-main">
       <div class="title-bar">
         <div class="title-bar-drag">
-          <img src="@/assets/logo.jpg" class="title-logo" />
           <span class="title-text">邻传</span>
         </div>
         <div class="window-controls">
@@ -81,13 +80,6 @@ onMounted(() => {
   gap: 8px;
   padding-left: 12px;
   -webkit-app-region: drag;
-}
-
-.title-logo {
-  width: 20px;
-  height: auto;
-  border-radius: 4px;
-  -webkit-app-region: no-drag;
 }
 
 .title-text {

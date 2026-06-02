@@ -111,7 +111,7 @@ async function saveSettings() {
 }
 
 .settings-content :deep(.el-card) {
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
   margin-bottom: 12px;
   background: var(--bg-card);

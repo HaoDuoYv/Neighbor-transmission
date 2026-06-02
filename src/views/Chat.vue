@@ -213,7 +213,9 @@ function insertCode() {
   gap: 12px;
   padding: 12px 20px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.2s ease;
+  border-radius: 0 10px 10px 0;
+  margin-right: 8px;
   border-left: 3px solid transparent;
 }
 

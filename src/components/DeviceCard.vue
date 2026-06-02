@@ -53,20 +53,21 @@ defineEmits<{
   gap: 12px;
   padding: 14px 16px;
   background: var(--bg-card);
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
-  transition: all 0.2s;
+  transition: all 0.25s ease;
   cursor: pointer;
 }
 
 .device-card:hover {
   border-color: var(--accent-color);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .device-card.online {
   border-left: 3px solid var(--success);
+  border-radius: 16px;
 }
 
 .device-avatar {

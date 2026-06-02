@@ -29,7 +29,7 @@ function openInBrowser() {
 <style scoped>
 .webview-container {
   flex: 1;
-  border-radius: 10px;
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--border-color);
   background: var(--bg-card);

@@ -151,16 +151,16 @@ function closeContextMenu() {
   gap: 10px;
   padding: 20px 16px 16px;
   background: var(--bg-card);
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
 }
 
 .file-card:hover {
   border-color: var(--accent-color);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .file-icon {
@@ -170,7 +170,7 @@ function closeContextMenu() {
   align-items: center;
   justify-content: center;
   background: var(--bg-active);
-  border-radius: 10px;
+  border-radius: 14px;
   color: var(--accent-color);
 }
 
@@ -201,8 +201,8 @@ function closeContextMenu() {
 .context-menu {
   position: fixed;
   background: var(--bg-card);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   padding: 4px;
   min-width: 120px;
@@ -213,7 +213,7 @@ function closeContextMenu() {
   padding: 8px 14px;
   cursor: pointer;
   transition: background 0.15s;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13px;
   color: var(--text-primary);
 }

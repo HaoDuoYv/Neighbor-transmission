@@ -94,7 +94,7 @@ function openFile() {
 
 .bubble-content {
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--bg-message);
   box-shadow: var(--shadow-sm);
 }
@@ -102,6 +102,11 @@ function openFile() {
 .message-bubble.own .bubble-content {
   background: var(--accent-gradient);
   color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.message-bubble:not(.own) .bubble-content {
+  border-bottom-left-radius: 4px;
 }
 
 .bubble-content p {
@@ -115,7 +120,7 @@ function openFile() {
   margin: 0;
   padding: 8px;
   background: var(--bg-hover);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow-x: auto;
 }
 
@@ -127,7 +132,7 @@ function openFile() {
 .bubble-content img {
   max-width: 240px;
   max-height: 240px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
 }
 

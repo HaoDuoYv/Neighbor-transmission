@@ -83,13 +83,14 @@ function formatProgress(progress: number): string {
   gap: 12px;
   padding: 12px 16px;
   background: var(--bg-card);
-  border-radius: 10px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
-  transition: all 0.2s;
+  transition: all 0.25s ease;
 }
 
 .transfer-item:hover {
-  border-color: #d0d5dd;
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .transfer-item.completed {
@@ -111,7 +112,7 @@ function formatProgress(progress: number): string {
   align-items: center;
   justify-content: center;
   background: var(--bg-hover);
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--text-secondary);
 }
 

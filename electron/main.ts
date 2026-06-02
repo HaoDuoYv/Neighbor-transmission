@@ -39,8 +39,8 @@ function createWindow() {
     }
   })
 
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  if (is.dev && process.env['VITE_DEV_SERVER_URL']) {
+    mainWindow.loadURL(process.env['VITE_DEV_SERVER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../dist/index.html'))
   }

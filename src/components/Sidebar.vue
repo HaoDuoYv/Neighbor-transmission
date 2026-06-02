@@ -1,7 +1,6 @@
 <template>
   <div class="sidebar">
     <div class="sidebar-header">
-      <img src="@/assets/logo.jpg" alt="邻传" class="logo" />
     </div>
 
     <nav class="sidebar-nav">
@@ -62,21 +61,7 @@ import { Monitor, ChatDotRound, Upload, FolderOpened, Link, Setting } from '@ele
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
   -webkit-app-region: drag;
-}
-
-.logo {
-  width: 48px;
-  height: auto;
-  border-radius: 10px;
-  object-fit: contain;
-  -webkit-app-region: no-drag;
-  transition: transform 0.2s;
-}
-
-.logo:hover {
-  transform: scale(1.05);
 }
 
 .sidebar-nav {
@@ -101,9 +86,8 @@ import { Monitor, ChatDotRound, Upload, FolderOpened, Link, Setting } from '@ele
   padding: 10px 0;
   color: rgba(255, 255, 255, 0.45);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
   -webkit-app-region: no-drag;
-  border-left: 3px solid transparent;
 }
 
 .nav-item:hover {
@@ -114,7 +98,18 @@ import { Monitor, ChatDotRound, Upload, FolderOpened, Link, Setting } from '@ele
 .nav-item.active {
   color: #fff;
   background: rgba(79, 110, 247, 0.15);
-  border-left-color: var(--accent-color);
+  position: relative;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--accent-color);
+  border-radius: 0 3px 3px 0;
 }
 
 .nav-item .el-icon {

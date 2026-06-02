@@ -15,6 +15,7 @@ interface PendingTransfer {
   receivedChunks: number
   totalChunks: number
   writeStream?: ReturnType<typeof createWriteStream>
+  socket?: Socket
 }
 
 export class FileTransferService extends EventEmitter {
@@ -57,6 +58,7 @@ export class FileTransferService extends EventEmitter {
     socket.on('close', () => {
       // 清理该连接相关的 pendingTransfers
       for (const [fileId, pending] of this.pendingTransfers) {
+        if (pending.socket !== socket) continue
         if (pending.writeStream) pending.writeStream.end()
         pending.task.status = 'failed'
         this.emit('transfer:error', { fileId, error: '连接断开' })
@@ -97,6 +99,10 @@ export class FileTransferService extends EventEmitter {
             buffer = remaining
             break
           case 'chunk':
+            if (remaining.length < header.size) {
+              // 数据不完整，等待更多数据
+              return buffer
+            }
             this.handleChunk(socket, header, remaining)
             buffer = remaining.subarray(header.size)
             break
@@ -203,7 +209,8 @@ export class FileTransferService extends EventEmitter {
       chunks: [],
       receivedChunks: 0,
       totalChunks,
-      writeStream: createWriteStream(filePath)
+      writeStream: createWriteStream(filePath),
+      socket
     })
 
     this.emit('transfer:start', task)

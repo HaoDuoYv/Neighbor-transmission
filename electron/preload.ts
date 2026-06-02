@@ -1,5 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+// TODO: 定义 ElectronAPI 接口类型，后续将创建 electron/preload.d.ts 类型声明文件
+// 目前回调参数暂时保留 unknown 类型
+
 contextBridge.exposeInMainWorld('electronAPI', {
   // 设备相关
   getDevices: () => ipcRenderer.invoke('device:list'),
@@ -35,32 +38,50 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximizeWindow: () => ipcRenderer.send('window:maximize'),
   closeWindow: () => ipcRenderer.send('window:close'),
 
-  // 事件监听
+  // 事件监听（每个方法返回取消订阅函数以避免内存泄漏）
   onDeviceOnline: (callback: (device: unknown) => void) => {
-    ipcRenderer.on('device:online', (_, device) => callback(device))
+    const handler = (_: unknown, device: unknown) => callback(device)
+    ipcRenderer.on('device:online', handler)
+    return () => { ipcRenderer.removeListener('device:online', handler) }
   },
   onDeviceOffline: (callback: (deviceId: string) => void) => {
-    ipcRenderer.on('device:offline', (_, deviceId) => callback(deviceId))
+    const handler = (_: unknown, deviceId: string) => callback(deviceId)
+    ipcRenderer.on('device:offline', handler)
+    return () => { ipcRenderer.removeListener('device:offline', handler) }
   },
   onDeviceUpdate: (callback: (device: unknown) => void) => {
-    ipcRenderer.on('device:update', (_, device) => callback(device))
+    const handler = (_: unknown, device: unknown) => callback(device)
+    ipcRenderer.on('device:update', handler)
+    return () => { ipcRenderer.removeListener('device:update', handler) }
   },
   onTransferProgress: (callback: (task: unknown) => void) => {
-    ipcRenderer.on('transfer:progress', (_, task) => callback(task))
+    const handler = (_: unknown, task: unknown) => callback(task)
+    ipcRenderer.on('transfer:progress', handler)
+    return () => { ipcRenderer.removeListener('transfer:progress', handler) }
   },
   onTransferComplete: (callback: (task: unknown) => void) => {
-    ipcRenderer.on('transfer:complete', (_, task) => callback(task))
+    const handler = (_: unknown, task: unknown) => callback(task)
+    ipcRenderer.on('transfer:complete', handler)
+    return () => { ipcRenderer.removeListener('transfer:complete', handler) }
   },
   onTransferError: (callback: (error: unknown) => void) => {
-    ipcRenderer.on('transfer:error', (_, error) => callback(error))
+    const handler = (_: unknown, error: unknown) => callback(error)
+    ipcRenderer.on('transfer:error', handler)
+    return () => { ipcRenderer.removeListener('transfer:error', handler) }
   },
   onMessageReceived: (callback: (message: unknown) => void) => {
-    ipcRenderer.on('message:new', (_, message) => callback(message))
+    const handler = (_: unknown, message: unknown) => callback(message)
+    ipcRenderer.on('message:new', handler)
+    return () => { ipcRenderer.removeListener('message:new', handler) }
   },
   onMessageSent: (callback: (message: unknown) => void) => {
-    ipcRenderer.on('message:sent', (_, message) => callback(message))
+    const handler = (_: unknown, message: unknown) => callback(message)
+    ipcRenderer.on('message:sent', handler)
+    return () => { ipcRenderer.removeListener('message:sent', handler) }
   },
   onMessageError: (callback: (error: unknown) => void) => {
-    ipcRenderer.on('message:error', (_, error) => callback(error))
+    const handler = (_: unknown, error: unknown) => callback(error)
+    ipcRenderer.on('message:error', handler)
+    return () => { ipcRenderer.removeListener('message:error', handler) }
   }
 })

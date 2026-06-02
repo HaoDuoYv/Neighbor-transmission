@@ -107,7 +107,7 @@ function handleOpenDir(file: TransferTask) {
   contextMenu.value.visible = false
 }
 
-function handleDelete(file: TransferTask) {
+function handleDelete(_file: TransferTask) {
   // TODO: 实现删除功能
   contextMenu.value.visible = false
 }

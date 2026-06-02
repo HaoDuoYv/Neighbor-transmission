@@ -17,6 +17,7 @@ export class DiscoveryService extends EventEmitter {
   private heartbeatTimer: NodeJS.Timeout | null = null
   private devices: Map<string, Device> = new Map()
   private offlineCheckTimer: NodeJS.Timeout | null = null
+  private running = false
 
   constructor(deviceId: string, deviceName: string, tcpPort: number, wsPort: number) {
     super()
@@ -29,6 +30,9 @@ export class DiscoveryService extends EventEmitter {
   }
 
   start() {
+    if (this.running) return
+    this.running = true
+
     this.socket.bind(UDP_PORT, () => {
       this.socket.setBroadcast(true)
       console.log(`[Discovery] UDP 监听端口 ${UDP_PORT}`)
@@ -150,9 +154,13 @@ export class DiscoveryService extends EventEmitter {
   }
 
   stop() {
+    if (!this.running) return
+    this.running = false
     this.broadcastOffline()
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer)
     if (this.offlineCheckTimer) clearInterval(this.offlineCheckTimer)
-    this.socket.close()
+    setTimeout(() => {
+      this.socket.close()
+    }, 100)
   }
 }

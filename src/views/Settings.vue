@@ -87,7 +87,6 @@ onMounted(async () => {
   settings.value = { ...settings.value, ...currentSettings }
 })
 
-// 主题切换实时生效
 watch(() => settings.value.theme, (theme) => {
   document.documentElement.setAttribute('data-theme', theme)
   localStorage.setItem('linchuan-theme', theme)
@@ -95,11 +94,9 @@ watch(() => settings.value.theme, (theme) => {
 
 async function selectSavePath() {
   // 使用系统对话框选择路径
-  // 实际实现需要通过 IPC 调用主进程的 dialog
 }
 
 async function saveSettings() {
-  // 保存设置到主进程
   await window.electronAPI.setSavePath(settings.value.savePath)
   ElMessage.success('设置已保存')
 }
@@ -111,25 +108,10 @@ async function saveSettings() {
 }
 
 .settings-content :deep(.el-card) {
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
   margin-bottom: 12px;
-  background: var(--bg-card);
-}
-
-.settings-content :deep(.el-card__header) {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border-light);
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.settings-content :deep(.el-card__body) {
-  padding: 20px;
 }
 
 .settings-footer {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 </style>

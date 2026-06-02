@@ -6,11 +6,11 @@
         <el-input
           v-model="searchQuery"
           placeholder="搜索文件..."
-          prefix-icon="Search"
+          :prefix-icon="Search"
           clearable
-          style="width: 240px"
+          style="width: 220px"
         />
-        <el-select v-model="filterType" placeholder="文件类型" clearable style="width: 120px">
+        <el-select v-model="filterType" placeholder="文件类型" clearable style="width: 110px">
           <el-option label="全部" value="" />
           <el-option label="图片" value="image" />
           <el-option label="文档" value="document" />
@@ -29,7 +29,7 @@
         @contextmenu.prevent="showContextMenu($event, file)"
       >
         <div class="file-icon">
-          <el-icon :size="32"><Document /></el-icon>
+          <el-icon :size="28"><Document /></el-icon>
         </div>
         <div class="file-info">
           <span class="file-name">{{ file.fileName }}</span>
@@ -40,7 +40,6 @@
       <el-empty v-if="files.length === 0" description="暂无文件" />
     </div>
 
-    <!-- 右键菜单 -->
     <div
       v-if="contextMenu.visible"
       class="context-menu"
@@ -55,7 +54,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { Document } from '@element-plus/icons-vue'
+import { Document, Search } from '@element-plus/icons-vue'
 import type { TransferTask } from '@/types'
 
 const files = ref<TransferTask[]>([])
@@ -120,7 +119,6 @@ function showContextMenu(event: MouseEvent, file: TransferTask) {
     file
   }
 
-  // 点击其他地方关闭菜单
   document.addEventListener('click', closeContextMenu, { once: true })
 }
 
@@ -138,8 +136,8 @@ function closeContextMenu() {
 .file-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
   overflow-y: auto;
   padding: 2px;
 }
@@ -151,8 +149,9 @@ function closeContextMenu() {
   gap: 10px;
   padding: 20px 16px 16px;
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
   transition: all 0.25s ease;
 }
@@ -164,13 +163,13 @@ function closeContextMenu() {
 }
 
 .file-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-active);
-  border-radius: 14px;
+  background: var(--accent-soft);
+  border-radius: 12px;
   color: var(--accent-color);
 }
 
@@ -202,7 +201,7 @@ function closeContextMenu() {
   position: fixed;
   background: var(--bg-card);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   padding: 4px;
   min-width: 120px;

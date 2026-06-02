@@ -40,7 +40,6 @@ function closeWindow() {
 }
 
 onMounted(() => {
-  // 恢复已保存的主题
   const saved = localStorage.getItem('linchuan-theme')
   if (saved) {
     document.documentElement.setAttribute('data-theme', saved)
@@ -68,25 +67,27 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 36px;
-  background: var(--bg-sidebar);
+  height: 32px;
+  background: var(--titlebar-bg);
   flex-shrink: 0;
   -webkit-app-region: drag;
+  padding-left: 8px;
 }
 
 .title-bar-drag {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-left: 12px;
+  padding-left: 4px;
   -webkit-app-region: drag;
 }
 
 .title-text {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .window-controls {
@@ -96,18 +97,18 @@ onMounted(() => {
 }
 
 .win-btn {
-  width: 46px;
+  width: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .win-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .win-btn-close:hover {

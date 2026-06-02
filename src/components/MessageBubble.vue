@@ -1,25 +1,21 @@
 <template>
   <div class="message-bubble" :class="{ own: isOwn, [message.type]: true }">
     <div class="bubble-content">
-      <!-- 文字消息 -->
       <template v-if="message.type === 'text'">
         <p>{{ message.content }}</p>
       </template>
 
-      <!-- 代码消息 -->
       <template v-else-if="message.type === 'code'">
         <pre><code>{{ message.content }}</code></pre>
       </template>
 
-      <!-- 图片消息 -->
       <template v-else-if="message.type === 'image'">
         <img :src="message.content" alt="图片" @click="previewImage" />
       </template>
 
-      <!-- 文件消息 -->
       <template v-else-if="message.type === 'file'">
         <div class="file-message" @click="openFile">
-          <el-icon :size="32"><Document /></el-icon>
+          <el-icon :size="28"><Document /></el-icon>
           <div class="file-info">
             <span class="file-name">{{ message.metadata?.fileName }}</span>
             <span class="file-size">{{ formatSize(message.metadata?.fileSize as number) }}</span>
@@ -27,7 +23,6 @@
         </div>
       </template>
 
-      <!-- 表情消息 -->
       <template v-else-if="message.type === 'emoji'">
         <span class="emoji">{{ message.content }}</span>
       </template>
@@ -96,7 +91,7 @@ function openFile() {
   padding: 10px 14px;
   border-radius: 16px;
   background: var(--bg-message);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
 }
 
 .message-bubble.own .bubble-content {
@@ -118,9 +113,9 @@ function openFile() {
 
 .bubble-content pre {
   margin: 0;
-  padding: 8px;
+  padding: 10px 12px;
   background: var(--bg-hover);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow-x: auto;
 }
 
@@ -132,7 +127,7 @@ function openFile() {
 .bubble-content img {
   max-width: 240px;
   max-height: 240px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -149,7 +144,7 @@ function openFile() {
 }
 
 .file-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 

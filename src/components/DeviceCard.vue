@@ -1,7 +1,7 @@
 <template>
   <div class="device-card" :class="{ online: device.isOnline }">
     <div class="device-avatar">
-      <el-avatar :size="48" :src="device.avatar">
+      <el-avatar :size="44" :src="device.avatar">
         {{ device.name.charAt(0) }}
       </el-avatar>
       <span class="status-dot" :class="{ online: device.isOnline }"></span>
@@ -53,8 +53,9 @@ defineEmits<{
   gap: 12px;
   padding: 14px 16px;
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-xs);
   transition: all 0.25s ease;
   cursor: pointer;
 }
@@ -62,22 +63,18 @@ defineEmits<{
 .device-card:hover {
   border-color: var(--accent-color);
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.device-card.online {
-  border-left: 3px solid var(--success);
-  border-radius: 16px;
+  transform: translateY(-1px);
 }
 
 .device-avatar {
   position: relative;
+  flex-shrink: 0;
 }
 
 .status-dot {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
+  bottom: 1px;
+  right: 1px;
   width: 10px;
   height: 10px;
   border-radius: 50%;

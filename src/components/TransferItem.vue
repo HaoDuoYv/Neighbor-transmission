@@ -1,7 +1,7 @@
 <template>
   <div class="transfer-item" :class="transfer.status">
     <div class="file-icon">
-      <el-icon :size="24"><Document /></el-icon>
+      <el-icon :size="22"><Document /></el-icon>
     </div>
 
     <div class="transfer-info">
@@ -83,8 +83,9 @@ function formatProgress(progress: number): string {
   gap: 12px;
   padding: 12px 16px;
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-xs);
   transition: all 0.25s ease;
 }
 
@@ -93,27 +94,16 @@ function formatProgress(progress: number): string {
   box-shadow: var(--shadow-sm);
 }
 
-.transfer-item.completed {
-  border-left: 3px solid var(--success);
-}
-
-.transfer-item.failed {
-  border-left: 3px solid var(--error);
-}
-
-.transfer-item.transferring {
-  border-left: 3px solid var(--accent-color);
-}
-
 .file-icon {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg-hover);
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
 .transfer-info {
@@ -122,7 +112,7 @@ function formatProgress(progress: number): string {
 }
 
 .file-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
   overflow: hidden;
@@ -135,7 +125,7 @@ function formatProgress(progress: number): string {
   gap: 8px;
   font-size: 12px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .transfer-meta .success { color: var(--success); }

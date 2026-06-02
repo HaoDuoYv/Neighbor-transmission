@@ -1,6 +1,5 @@
 <template>
   <div class="chat-page">
-    <!-- 左侧会话列表 -->
     <div class="conversation-list">
       <div class="list-header">
         <h3>聊天</h3>
@@ -14,26 +13,32 @@
           :class="{ active: currentChatDeviceId === device.id }"
           @click="selectChat(device.id)"
         >
-          <el-avatar :size="40">{{ device.name.charAt(0) }}</el-avatar>
+          <el-avatar :size="36">{{ device.name.charAt(0) }}</el-avatar>
           <div class="conversation-info">
-            <span class="name">{{ device.name }}</span>
+            <div class="name-row">
+              <span class="name">{{ device.name }}</span>
+              <span v-if="device.isOnline" class="online-dot"></span>
+            </div>
             <span class="last-message">{{ getLastMessage(device.id) }}</span>
           </div>
-          <span v-if="device.isOnline" class="online-dot"></span>
         </div>
 
-        <el-empty v-if="chatDevices.length === 0" description="暂无会话" :image-size="60" />
+        <el-empty v-if="chatDevices.length === 0" description="暂无会话" :image-size="48" />
       </div>
     </div>
 
-    <!-- 右侧聊天区域 -->
     <div class="chat-area">
       <template v-if="currentChatDeviceId">
         <div class="chat-header">
-          <h3>{{ currentDeviceName }}</h3>
-          <span class="status" :class="{ online: isCurrentDeviceOnline }">
-            {{ isCurrentDeviceOnline ? '在线' : '离线' }}
-          </span>
+          <div class="chat-header-info">
+            <el-avatar :size="32">{{ currentDeviceName.charAt(0) }}</el-avatar>
+            <div>
+              <h3>{{ currentDeviceName }}</h3>
+              <span class="status" :class="{ online: isCurrentDeviceOnline }">
+                {{ isCurrentDeviceOnline ? '在线' : '离线' }}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div class="messages-container" ref="messagesContainer">
@@ -47,13 +52,13 @@
 
         <div class="input-area">
           <div class="toolbar">
-            <el-button text @click="insertEmoji">
+            <el-button text @click="insertEmoji" title="表情">
               <el-icon><ChatDotRound /></el-icon>
             </el-button>
-            <el-button text @click="selectFile">
+            <el-button text @click="selectFile" title="文件">
               <el-icon><Paperclip /></el-icon>
             </el-button>
-            <el-button text @click="insertCode">
+            <el-button text @click="insertCode" title="代码">
               <el-icon><Document /></el-icon>
             </el-button>
           </div>
@@ -77,7 +82,7 @@
 
       <template v-else>
         <div class="empty-chat">
-          <el-icon :size="64" color="#c0c4cc"><ChatDotRound /></el-icon>
+          <el-icon :size="56" color="#c0c4cc"><ChatDotRound /></el-icon>
           <p>选择一个会话开始聊天</p>
         </div>
       </template>
@@ -101,7 +106,7 @@ const inputMessage = ref('')
 const messagesContainer = ref<HTMLElement | null>(null)
 
 const currentChatDeviceId = computed(() => chatStore.currentChatDeviceId)
-const currentDeviceId = ref('') // 需要从主进程获取当前设备 ID
+const currentDeviceId = ref('')
 const currentMessages = computed(() => chatStore.currentMessages)
 
 const chatDevices = computed(() => deviceStore.devices)
@@ -113,7 +118,6 @@ const isCurrentDeviceOnline = computed(() => currentDevice.value?.isOnline || fa
 onMounted(() => {
   deviceStore.fetchDevices()
 
-  // 从路由参数获取设备 ID
   const deviceId = route.params.deviceId as string
   if (deviceId) {
     selectChat(deviceId)
@@ -160,7 +164,6 @@ function scrollToBottom() {
 async function selectFile() {
   const filePaths = await window.electronAPI.selectFile()
   if (filePaths && filePaths.length > 0 && currentChatDeviceId.value) {
-    // 发送文件消息
     await chatStore.sendMessage(currentChatDeviceId.value, 'file', filePaths[0], {
       fileName: filePaths[0].split('\\').pop()
     })
@@ -184,16 +187,16 @@ function insertCode() {
 }
 
 .conversation-list {
-  width: 280px;
+  width: 260px;
   border-right: 1px solid var(--border-color);
   background: var(--bg-card);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .list-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-light);
+  padding: 16px 16px 12px;
 }
 
 .list-header h3 {
@@ -205,18 +208,18 @@ function insertCode() {
 .list-content {
   flex: 1;
   overflow-y: auto;
+  padding: 0 8px 8px;
 }
 
 .conversation-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
+  gap: 10px;
+  padding: 10px 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 0 10px 10px 0;
-  margin-right: 8px;
-  border-left: 3px solid transparent;
+  transition: all 0.15s ease;
+  border-radius: 10px;
+  margin-bottom: 2px;
 }
 
 .conversation-item:hover {
@@ -225,7 +228,6 @@ function insertCode() {
 
 .conversation-item.active {
   background: var(--bg-active);
-  border-left-color: var(--accent-color);
 }
 
 .conversation-info {
@@ -233,11 +235,17 @@ function insertCode() {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .conversation-info .name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary);
 }
@@ -251,11 +259,11 @@ function insertCode() {
 }
 
 .online-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--success);
-  box-shadow: 0 0 3px rgba(16, 185, 129, 0.4);
+  flex-shrink: 0;
 }
 
 .chat-area {
@@ -266,26 +274,31 @@ function insertCode() {
 }
 
 .chat-header {
-  padding: 14px 20px;
+  padding: 12px 20px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.chat-header-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.chat-header h3 {
-  font-size: 15px;
+.chat-header-info h3 {
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  line-height: 1.3;
 }
 
-.chat-header .status {
-  font-size: 12px;
+.chat-header-info .status {
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
-.chat-header .status.online {
+.chat-header-info .status.online {
   color: var(--success);
 }
 
@@ -301,12 +314,13 @@ function insertCode() {
 .input-area {
   background: var(--bg-card);
   border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .toolbar {
   padding: 8px 16px 4px;
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .input-footer {
@@ -327,7 +341,11 @@ function insertCode() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   color: var(--text-secondary);
+}
+
+.empty-chat p {
+  font-size: 14px;
 }
 </style>

@@ -1,13 +1,13 @@
 <template>
   <div class="page device-list-page">
     <div class="page-header">
-      <h2>局域网设备</h2>
+      <h2>设备</h2>
       <el-input
         v-model="searchQuery"
         placeholder="搜索设备..."
-        prefix-icon="Search"
+        :prefix-icon="Search"
         clearable
-        style="width: 240px"
+        style="width: 220px"
       />
     </div>
 
@@ -29,6 +29,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { Search } from '@element-plus/icons-vue'
 import { useDeviceStore } from '@/stores/device'
 import DeviceCard from '@/components/DeviceCard.vue'
 import type { Device } from '@/types'
@@ -72,7 +73,7 @@ function handleToggleFavorite(device: Device) {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  gap: 10px;
   overflow-y: auto;
   padding: 2px;
 }

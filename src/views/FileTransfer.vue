@@ -1,7 +1,7 @@
 <template>
   <div class="page file-transfer-page">
     <div class="page-header">
-      <h2>文件传输</h2>
+      <h2>传输</h2>
       <el-radio-group v-model="filterStatus" size="small">
         <el-radio-button label="all">全部</el-radio-button>
         <el-radio-button label="transferring">进行中</el-radio-button>

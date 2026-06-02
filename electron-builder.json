@@ -8,12 +8,20 @@
     "dist/**/*",
     "dist-electron/**/*"
   ],
+  "asarUnpack": [
+    "node_modules/better-sqlite3/**",
+    "node_modules/electron-store/**"
+  ],
   "win": {
-    "target": "nsis",
-    "icon": "build/icon.ico"
+    "target": "nsis"
   },
   "nsis": {
     "oneClick": false,
-    "allowToChangeInstallationDirectory": true
-  }
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "邻传"
+  },
+  "npmRebuild": true
 }

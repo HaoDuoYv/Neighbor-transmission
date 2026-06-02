@@ -29,10 +29,11 @@ function openInBrowser() {
 <style scoped>
 .webview-container {
   flex: 1;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border-color);
   background: var(--bg-card);
+  box-shadow: var(--shadow-xs);
 }
 
 .webview {

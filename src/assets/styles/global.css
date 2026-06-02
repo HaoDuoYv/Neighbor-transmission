@@ -22,55 +22,68 @@ body {
 /* === 主题变量 === */
 :root,
 [data-theme='light'] {
-  --bg-page: #f0f2f5;
+  --bg-page: #f2f3f7;
   --bg-card: #ffffff;
-  --bg-sidebar: #1a1d29;
-  --bg-hover: #f8f9fc;
-  --bg-active: #eef2ff;
+  --bg-sidebar: #edeff3;
+  --bg-hover: #f5f6fa;
+  --bg-active: #eef0ff;
   --bg-message: #ffffff;
   --bg-input: #ffffff;
-  --border-color: #eef0f4;
+  --border-color: #e8eaef;
   --border-light: #f0f2f5;
   --text-primary: #1a1d29;
-  --text-secondary: #98a2b3;
+  --text-secondary: #9ca3b5;
   --text-tertiary: #6b7280;
   --text-inverse: #ffffff;
   --accent-color: #4f6ef7;
+  --accent-soft: rgba(79, 110, 247, 0.08);
   --accent-gradient: linear-gradient(135deg, #4f6ef7, #6c5ce7);
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
   --scrollbar-thumb: #d0d5dd;
   --scrollbar-thumb-hover: #98a2b3;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 12px rgba(79, 110, 247, 0.1);
-  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --sidebar-border: rgba(79, 110, 247, 0.12);
+  --overlay: rgba(0, 0, 0, 0.3);
+  --titlebar-bg: #edeff3;
 }
 
 [data-theme='dark'] {
-  --bg-page: #13141f;
-  --bg-card: #1c1d2b;
-  --bg-sidebar: #0e0f17;
-  --bg-hover: #252638;
-  --bg-active: #1e2040;
-  --bg-message: #1c1d2b;
-  --bg-input: #1c1d2b;
-  --border-color: #2a2b3d;
-  --border-light: #252638;
+  --bg-page: #11121c;
+  --bg-card: #191a28;
+  --bg-sidebar: #0c0d15;
+  --bg-hover: #222336;
+  --bg-active: #1c1d3a;
+  --bg-message: #191a28;
+  --bg-input: #191a28;
+  --border-color: #262738;
+  --border-light: #222336;
   --text-primary: #e4e5f0;
   --text-secondary: #8b8da3;
   --text-tertiary: #6b6d82;
   --text-inverse: #1a1d29;
   --accent-color: #6c83f7;
+  --accent-soft: rgba(108, 131, 247, 0.1);
   --accent-gradient: linear-gradient(135deg, #6c83f7, #8b7cf7);
   --success: #34d399;
   --error: #f87171;
   --warning: #fbbf24;
-  --scrollbar-thumb: #3a3b4d;
-  --scrollbar-thumb-hover: #5a5b6d;
+  --scrollbar-thumb: #34354a;
+  --scrollbar-thumb-hover: #4a4b60;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --sidebar-border: rgba(255, 255, 255, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.4);
+  --sidebar-border: rgba(108, 131, 247, 0.15);
+  --overlay: rgba(0, 0, 0, 0.5);
+  --titlebar-bg: #0c0d15;
+  --titlebar-bg: #0a0b12;
 }
 
 ::-webkit-scrollbar {
@@ -91,12 +104,20 @@ body {
   background: var(--scrollbar-thumb-hover);
 }
 
+/* === 圆角变量 === */
+:root {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
 /* === 页面通用样式 === */
 .page {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 24px;
   overflow: hidden;
   background: var(--bg-page);
 }
@@ -110,18 +131,10 @@ body {
 }
 
 .page-header h2 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: 0.3px;
-}
-
-/* === 圆角变量 === */
-:root {
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  letter-spacing: 0.2px;
 }
 
 /* === 卡片容器 === */
@@ -138,6 +151,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
   transition: all 0.25s ease;
 }
 
@@ -154,7 +168,7 @@ body {
 .status-error { color: var(--error); }
 .status-warning { color: var(--warning); }
 
-/* === 动画 === */
+/* === Transition === */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -162,4 +176,93 @@ body {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* === Element Plus 主题覆盖 === */
+.el-button--primary {
+  --el-button-bg-color: var(--accent-color);
+  --el-button-border-color: var(--accent-color);
+  --el-button-hover-bg-color: #5f7bf8;
+  --el-button-hover-border-color: #5f7bf8;
+}
+
+.el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--border-color) inset !important;
+  background: var(--bg-input) !important;
+  border-radius: 10px !important;
+}
+
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--accent-color) inset !important;
+}
+
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px var(--accent-color) inset !important;
+}
+
+.el-input__inner {
+  color: var(--text-primary) !important;
+}
+
+.el-select .el-input__wrapper {
+  border-radius: 10px !important;
+}
+
+.el-radio-button__inner {
+  border-radius: 8px !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-radio-group .el-radio-button:first-of-type .el-radio-button__inner {
+  border-radius: 8px 0 0 8px !important;
+}
+
+.el-radio-group .el-radio-button:last-of-type .el-radio-button__inner {
+  border-radius: 0 8px 8px 0 !important;
+}
+
+.el-progress-bar__outer {
+  border-radius: 4px !important;
+  background-color: var(--border-color) !important;
+}
+
+.el-progress-bar__inner {
+  border-radius: 4px !important;
+  background: var(--accent-gradient) !important;
+}
+
+/* === Element Plus Card 覆盖 === */
+.el-card {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border-color) !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.el-card__header {
+  padding: 16px 20px !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.el-card__body {
+  padding: 20px !important;
+}
+
+/* === Element Plus Empty 覆盖 === */
+.el-empty__description p {
+  color: var(--text-secondary) !important;
+}
+
+/* === Element Plus Switch 覆盖 === */
+.el-switch.is-checked .el-switch__core {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+/* === Element Plus Tag 覆盖 === */
+.el-tag {
+  border-radius: 6px !important;
 }

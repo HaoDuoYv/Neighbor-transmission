@@ -180,26 +180,26 @@ function insertCode() {
 .chat-page {
   height: 100%;
   display: flex;
-  background: #f0f2f5;
+  background: var(--bg-page);
 }
 
 .conversation-list {
   width: 280px;
-  border-right: 1px solid #eef0f4;
-  background: #fff;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-card);
   display: flex;
   flex-direction: column;
 }
 
 .list-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .list-header h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #1a1d29;
+  color: var(--text-primary);
 }
 
 .list-content {
@@ -218,12 +218,12 @@ function insertCode() {
 }
 
 .conversation-item:hover {
-  background: #f8f9fc;
+  background: var(--bg-hover);
 }
 
 .conversation-item.active {
-  background: #eef2ff;
-  border-left-color: #4f6ef7;
+  background: var(--bg-active);
+  border-left-color: var(--accent-color);
 }
 
 .conversation-info {
@@ -237,12 +237,12 @@ function insertCode() {
 .conversation-info .name {
   font-size: 14px;
   font-weight: 500;
-  color: #1a1d29;
+  color: var(--text-primary);
 }
 
 .conversation-info .last-message {
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -252,7 +252,7 @@ function insertCode() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--success);
   box-shadow: 0 0 3px rgba(16, 185, 129, 0.4);
 }
 
@@ -265,8 +265,8 @@ function insertCode() {
 
 .chat-header {
   padding: 14px 20px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -275,16 +275,16 @@ function insertCode() {
 .chat-header h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #1a1d29;
+  color: var(--text-primary);
 }
 
 .chat-header .status {
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--text-secondary);
 }
 
 .chat-header .status.online {
-  color: #10b981;
+  color: var(--success);
 }
 
 .messages-container {
@@ -293,12 +293,12 @@ function insertCode() {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  background: #f8f9fc;
+  background: var(--bg-page);
 }
 
 .input-area {
-  background: #fff;
-  border-top: 1px solid #eef0f4;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
 }
 
 .toolbar {
@@ -316,7 +316,7 @@ function insertCode() {
 
 .input-footer .hint {
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--text-secondary);
 }
 
 .empty-chat {
@@ -326,6 +326,6 @@ function insertCode() {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: #98a2b3;
+  color: var(--text-secondary);
 }
 </style>

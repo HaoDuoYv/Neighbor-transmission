@@ -48,7 +48,7 @@ import { Monitor, ChatDotRound, Upload, FolderOpened, Link, Setting } from '@ele
 .sidebar {
   width: 76px;
   height: 100vh;
-  background: linear-gradient(180deg, #1a1d29 0%, #232738 100%);
+  background: linear-gradient(180deg, var(--bg-sidebar) 0%, #232738 100%);
   display: flex;
   flex-direction: column;
   user-select: none;
@@ -89,7 +89,7 @@ import { Monitor, ChatDotRound, Upload, FolderOpened, Link, Setting } from '@ele
 
 .sidebar-footer {
   padding: 8px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--sidebar-border);
 }
 
 .nav-item {
@@ -114,7 +114,7 @@ import { Monitor, ChatDotRound, Upload, FolderOpened, Link, Setting } from '@ele
 .nav-item.active {
   color: #fff;
   background: rgba(79, 110, 247, 0.15);
-  border-left-color: #4f6ef7;
+  border-left-color: var(--accent-color);
 }
 
 .nav-item .el-icon {

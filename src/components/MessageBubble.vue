@@ -95,12 +95,12 @@ function openFile() {
 .bubble-content {
   padding: 10px 14px;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: var(--bg-message);
+  box-shadow: var(--shadow-sm);
 }
 
 .message-bubble.own .bubble-content {
-  background: linear-gradient(135deg, #4f6ef7, #6c5ce7);
+  background: var(--accent-gradient);
   color: #fff;
 }
 
@@ -114,7 +114,7 @@ function openFile() {
 .bubble-content pre {
   margin: 0;
   padding: 8px;
-  background: #f8f9fc;
+  background: var(--bg-hover);
   border-radius: 6px;
   overflow-x: auto;
 }
@@ -163,20 +163,15 @@ function openFile() {
   gap: 4px;
   margin-top: 4px;
   font-size: 11px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 .status .loading {
   animation: spin 1s linear infinite;
 }
 
-.status .success {
-  color: #67c23a;
-}
-
-.status .error {
-  color: #f56c6c;
-}
+.status .success { color: var(--success); }
+.status .error { color: var(--error); }
 
 @keyframes spin {
   from { transform: rotate(0deg); }

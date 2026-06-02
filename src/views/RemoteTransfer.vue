@@ -31,8 +31,8 @@ function openInBrowser() {
   flex: 1;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #eef0f4;
-  background: #fff;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
 }
 
 .webview {

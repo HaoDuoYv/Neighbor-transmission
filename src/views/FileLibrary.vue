@@ -150,16 +150,16 @@ function closeContextMenu() {
   align-items: center;
   gap: 10px;
   padding: 20px 16px 16px;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 10px;
-  border: 1px solid #eef0f4;
+  border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .file-card:hover {
-  border-color: #4f6ef7;
-  box-shadow: 0 4px 12px rgba(79, 110, 247, 0.1);
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
@@ -169,9 +169,9 @@ function closeContextMenu() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eef2ff;
+  background: var(--bg-active);
   border-radius: 10px;
-  color: #4f6ef7;
+  color: var(--accent-color);
 }
 
 .file-info {
@@ -185,7 +185,7 @@ function closeContextMenu() {
 .file-name {
   font-size: 13px;
   font-weight: 500;
-  color: #1a1d29;
+  color: var(--text-primary);
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -195,17 +195,18 @@ function closeContextMenu() {
 
 .file-meta {
   font-size: 11px;
-  color: #98a2b3;
+  color: var(--text-secondary);
 }
 
 .context-menu {
   position: fixed;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   z-index: 1000;
   padding: 4px;
   min-width: 120px;
+  border: 1px solid var(--border-color);
 }
 
 .menu-item {
@@ -214,18 +215,18 @@ function closeContextMenu() {
   transition: background 0.15s;
   border-radius: 4px;
   font-size: 13px;
-  color: #1a1d29;
+  color: var(--text-primary);
 }
 
 .menu-item:hover {
-  background: #f5f7fa;
+  background: var(--bg-hover);
 }
 
 .menu-item.danger {
-  color: #ef4444;
+  color: var(--error);
 }
 
 .menu-item.danger:hover {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.08);
 }
 </style>

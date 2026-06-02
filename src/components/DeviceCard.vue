@@ -52,21 +52,21 @@ defineEmits<{
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 10px;
-  border: 1px solid #eef0f4;
+  border: 1px solid var(--border-color);
   transition: all 0.2s;
   cursor: pointer;
 }
 
 .device-card:hover {
-  border-color: #4f6ef7;
-  box-shadow: 0 4px 12px rgba(79, 110, 247, 0.1);
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
 .device-card.online {
-  border-left: 3px solid #10b981;
+  border-left: 3px solid var(--success);
 }
 
 .device-avatar {
@@ -80,12 +80,12 @@ defineEmits<{
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #9ca3af;
-  border: 2px solid #fff;
+  background: var(--text-secondary);
+  border: 2px solid var(--bg-card);
 }
 
 .status-dot.online {
-  background: #10b981;
+  background: var(--success);
   box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
 }
 
@@ -97,7 +97,7 @@ defineEmits<{
 .device-name {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1d29;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -105,7 +105,7 @@ defineEmits<{
 
 .device-ip {
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 

@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import Sidebar from '@/components/Sidebar.vue'
 
 function minimize() {
@@ -38,6 +39,14 @@ function maximize() {
 function closeWindow() {
   window.electronAPI?.closeWindow()
 }
+
+onMounted(() => {
+  // 恢复已保存的主题
+  const saved = localStorage.getItem('linchuan-theme')
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved)
+  }
+})
 </script>
 
 <style scoped>
@@ -46,7 +55,7 @@ function closeWindow() {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: #f0f2f5;
+  background: var(--bg-page);
 }
 
 .app-main {
@@ -61,7 +70,7 @@ function closeWindow() {
   align-items: center;
   justify-content: space-between;
   height: 36px;
-  background: #1a1d29;
+  background: var(--bg-sidebar);
   flex-shrink: 0;
   -webkit-app-region: drag;
 }

@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const settings = ref({
@@ -80,8 +80,17 @@ const settings = ref({
 })
 
 onMounted(async () => {
+  const savedTheme = localStorage.getItem('linchuan-theme') || 'light'
+  settings.value.theme = savedTheme
+
   const currentSettings = await window.electronAPI.getSettings()
   settings.value = { ...settings.value, ...currentSettings }
+})
+
+// 主题切换实时生效
+watch(() => settings.value.theme, (theme) => {
+  document.documentElement.setAttribute('data-theme', theme)
+  localStorage.setItem('linchuan-theme', theme)
 })
 
 async function selectSavePath() {
@@ -103,16 +112,17 @@ async function saveSettings() {
 
 .settings-content :deep(.el-card) {
   border-radius: 10px;
-  border: 1px solid #eef0f4;
+  border: 1px solid var(--border-color);
   margin-bottom: 12px;
+  background: var(--bg-card);
 }
 
 .settings-content :deep(.el-card__header) {
   padding: 14px 20px;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid var(--border-light);
   font-weight: 600;
   font-size: 14px;
-  color: #1a1d29;
+  color: var(--text-primary);
 }
 
 .settings-content :deep(.el-card__body) {

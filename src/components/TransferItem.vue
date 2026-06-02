@@ -82,9 +82,9 @@ function formatProgress(progress: number): string {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 10px;
-  border: 1px solid #eef0f4;
+  border: 1px solid var(--border-color);
   transition: all 0.2s;
 }
 
@@ -93,15 +93,15 @@ function formatProgress(progress: number): string {
 }
 
 .transfer-item.completed {
-  border-left: 3px solid #10b981;
+  border-left: 3px solid var(--success);
 }
 
 .transfer-item.failed {
-  border-left: 3px solid #ef4444;
+  border-left: 3px solid var(--error);
 }
 
 .transfer-item.transferring {
-  border-left: 3px solid #4f6ef7;
+  border-left: 3px solid var(--accent-color);
 }
 
 .file-icon {
@@ -110,9 +110,9 @@ function formatProgress(progress: number): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
+  background: var(--bg-hover);
   border-radius: 10px;
-  color: #98a2b3;
+  color: var(--text-secondary);
 }
 
 .transfer-info {
@@ -123,7 +123,7 @@ function formatProgress(progress: number): string {
 .file-name {
   font-size: 14px;
   font-weight: 500;
-  color: #1a1d29;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -133,21 +133,13 @@ function formatProgress(progress: number): string {
   display: flex;
   gap: 8px;
   font-size: 12px;
-  color: #98a2b3;
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
-.transfer-meta .success {
-  color: #10b981;
-}
-
-.transfer-meta .error {
-  color: #ef4444;
-}
-
-.transfer-meta .cancelled {
-  color: #f59e0b;
-}
+.transfer-meta .success { color: var(--success); }
+.transfer-meta .error { color: var(--error); }
+.transfer-meta .cancelled { color: var(--warning); }
 
 .transfer-actions {
   opacity: 0;

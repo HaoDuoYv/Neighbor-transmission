@@ -1,0 +1,13 @@
+export type LinchuanCallback = (result: any) => void
+export type LinchuanEventCallback = (payload: any) => void
+
+export type LinchuanNetworkApi = {
+  on: (eventName: string, callback: LinchuanEventCallback) => void
+  startDiscovery: (options: any, callback: LinchuanCallback) => void
+  stopDiscovery: (options: any, callback: LinchuanCallback) => void
+  manualConnect: (options: any, callback: LinchuanCallback) => void
+  sendMessage: (options: any, callback: LinchuanCallback) => void
+  sendMessageAck: (options: any, callback: LinchuanCallback) => void
+  sendFile: (options: any, callback: LinchuanCallback) => void
+  runDiagnostics: (options: any, callback: LinchuanCallback) => void
+}

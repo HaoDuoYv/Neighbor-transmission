@@ -14,7 +14,7 @@ interface PendingMessage {
 }
 
 export class MessagingService extends EventEmitter {
-  private wss: WebSocketServer
+  private wss: WebSocketServer | null = null
   private port: number = WS_PORT
   private connections: Map<string, WebSocket> = new Map() // deviceId -> WebSocket
   private pendingMessages: Map<string, PendingMessage> = new Map()
@@ -23,10 +23,16 @@ export class MessagingService extends EventEmitter {
   constructor(localDeviceId: string) {
     super()
     this.localDeviceId = localDeviceId
-    this.wss = new WebSocketServer({ port: this.port })
   }
 
   start() {
+    try {
+      this.wss = new WebSocketServer({ port: this.port })
+    } catch (err) {
+      console.error(`[Messaging] 无法在端口 ${this.port} 启动 WebSocket 服务器:`, err)
+      return
+    }
+
     this.wss.on('listening', () => {
       console.log(`[Messaging] WebSocket 监听端口 ${this.port}`)
     })
@@ -96,6 +102,7 @@ export class MessagingService extends EventEmitter {
 
     ws.on('error', (err) => {
       console.error(`[Messaging] 连接失败 (${deviceId}):`, err)
+      this.emit('connect:failed', { deviceId, error: err.message })
     })
   }
 
@@ -204,6 +211,6 @@ export class MessagingService extends EventEmitter {
       if (pending.timer) clearTimeout(pending.timer)
     }
     this.pendingMessages.clear()
-    this.wss.close()
+    this.wss?.close()
   }
 }

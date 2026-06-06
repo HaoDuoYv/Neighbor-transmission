@@ -8,18 +8,41 @@
       </el-button>
     </div>
 
-    <div class="webview-container">
+    <div class="webview-container" ref="containerRef">
       <webview
+        ref="webviewRef"
         src="https://filehelper.weixin.qq.com/"
         class="webview"
-        :style="{ height: '100%' }"
+        :style="{ height: webviewHeight + 'px' }"
+        allowpopups
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { Link } from '@element-plus/icons-vue'
+
+const containerRef = ref<HTMLElement | null>(null)
+const webviewRef = ref<HTMLElement | null>(null)
+const webviewHeight = ref(600)
+let observer: ResizeObserver | null = null
+
+onMounted(() => {
+  if (containerRef.value) {
+    observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        webviewHeight.value = entry.contentRect.height
+      }
+    })
+    observer.observe(containerRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  observer?.disconnect()
+})
 
 function openInBrowser() {
   window.electronAPI.openFile('https://filehelper.weixin.qq.com/')
@@ -34,10 +57,11 @@ function openInBrowser() {
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   box-shadow: var(--shadow-xs);
+  position: relative;
 }
 
 .webview {
   width: 100%;
-  height: 100%;
+  border: none;
 }
 </style>

@@ -1,0 +1,28 @@
+{
+  "id": "linchuan-network",
+  "displayName": "邻传局域网网络插件",
+  "version": "0.1.0",
+  "description": "Android-first UDP/TCP/WebSocket bridge for 邻传 mobile",
+  "keywords": [
+    "linchuan",
+    "udp",
+    "tcp",
+    "websocket",
+    "lan"
+  ],
+  "repository": "",
+  "engines": {
+    "HBuilderX": "^4.0.0"
+  },
+  "dcloudext": {
+    "type": "uts",
+    "sale": {
+      "regular": {
+        "price": "0.00"
+      }
+    }
+  },
+  "uni_modules": {
+    "dependencies": []
+  }
+}

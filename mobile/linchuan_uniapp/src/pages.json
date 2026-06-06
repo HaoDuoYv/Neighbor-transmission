@@ -1,0 +1,68 @@
+{
+  "pages": [
+    {
+      "path": "pages/devices/devices",
+      "style": {
+        "navigationBarTitleText": "邻传"
+      }
+    },
+    {
+      "path": "pages/chat/chat",
+      "style": {
+        "navigationBarTitleText": "聊天"
+      }
+    },
+    {
+      "path": "pages/transfers/transfers",
+      "style": {
+        "navigationBarTitleText": "传输"
+      }
+    },
+    {
+      "path": "pages/repair/repair",
+      "style": {
+        "navigationBarTitleText": "修复"
+      }
+    },
+    {
+      "path": "pages/settings/settings",
+      "style": {
+        "navigationBarTitleText": "设置"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#667085",
+    "selectedColor": "#0f766e",
+    "backgroundColor": "#fbfbf8",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/devices/devices",
+        "text": "设备"
+      },
+      {
+        "pagePath": "pages/chat/chat",
+        "text": "聊天"
+      },
+      {
+        "pagePath": "pages/transfers/transfers",
+        "text": "传输"
+      },
+      {
+        "pagePath": "pages/repair/repair",
+        "text": "修复"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "设置"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "邻传",
+    "navigationBarBackgroundColor": "#fbfbf8",
+    "backgroundColor": "#fbfbf8"
+  }
+}

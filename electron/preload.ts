@@ -9,6 +9,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getOnlineDevices: () => ipcRenderer.invoke('device:online'),
   setDeviceName: (name: string) => ipcRenderer.invoke('device:setName', name),
   toggleFavorite: (deviceId: string, isFavorite: boolean) => ipcRenderer.invoke('device:toggleFavorite', deviceId, isFavorite),
+  getDeviceInfo: () => ipcRenderer.invoke('device:info'),
+  pingDevice: (targetIP: string) => ipcRenderer.invoke('device:ping', targetIP),
+  runNetworkDiagnostics: () => ipcRenderer.invoke('network:diagnostics'),
 
   // 消息相关
   sendMessage: (toDevice: string, type: string, content: string, metadata?: Record<string, unknown>) =>

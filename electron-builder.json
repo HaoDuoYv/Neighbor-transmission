@@ -13,7 +13,8 @@
     "node_modules/electron-store/**"
   ],
   "win": {
-    "target": "nsis"
+    "target": "nsis",
+    "signAndEditExecutable": false
   },
   "nsis": {
     "oneClick": false,

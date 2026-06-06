@@ -14,6 +14,13 @@
           <el-form-item label="设备名称">
             <el-input v-model="settings.deviceName" placeholder="输入设备名称" />
           </el-form-item>
+          <el-form-item label="IP 地址">
+            <el-input :model-value="localIP" disabled>
+              <template #append>
+                <el-button @click="copyIP">复制</el-button>
+              </template>
+            </el-input>
+          </el-form-item>
         </el-form>
       </el-card>
 
@@ -79,18 +86,36 @@ const settings = ref({
   language: 'zh-CN'
 })
 
+const localIP = ref('')
+
 onMounted(async () => {
   const savedTheme = localStorage.getItem('linchuan-theme') || 'light'
   settings.value.theme = savedTheme
 
-  const currentSettings = await window.electronAPI.getSettings()
-  settings.value = { ...settings.value, ...currentSettings }
+  try {
+    const currentSettings = await window.electronAPI.getSettings()
+    settings.value = { ...settings.value, ...currentSettings }
+  } catch {
+    console.warn('[Settings] 获取设置失败')
+  }
+
+  try {
+    const info = await window.electronAPI.getDeviceInfo()
+    localIP.value = info.localIP
+  } catch {
+    localIP.value = '无法获取'
+  }
 })
 
 watch(() => settings.value.theme, (theme) => {
   document.documentElement.setAttribute('data-theme', theme)
   localStorage.setItem('linchuan-theme', theme)
 })
+
+function copyIP() {
+  navigator.clipboard.writeText(localIP.value)
+  ElMessage.success('IP 已复制')
+}
 
 async function selectSavePath() {
   // 使用系统对话框选择路径

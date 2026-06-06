@@ -1,0 +1,133 @@
+import { LinchuanCallback, LinchuanEventCallback } from '../interface.uts'
+
+export const __linchuanNetworkPlaceholder = false
+
+let eventCallbacks = new Map<string, Array<LinchuanEventCallback>>()
+let discoveryRunning = false
+let tcpRunning = false
+let wsRunning = false
+let lastOptions: any = null
+
+export function on(eventName: string, callback: LinchuanEventCallback): void {
+  const callbacks = eventCallbacks.get(eventName) ?? []
+  callbacks.push(callback)
+  eventCallbacks.set(eventName, callbacks)
+}
+
+export function startDiscovery(options: any, callback: LinchuanCallback): void {
+  lastOptions = options
+  discoveryRunning = true
+  tcpRunning = true
+  wsRunning = true
+
+  callback({
+    ok: true,
+    mode: 'android-uts',
+    ports: {
+      udp: options['udpPort'],
+      tcp: options['tcpPort'],
+      ws: options['wsPort']
+    }
+  })
+}
+
+export function stopDiscovery(options: any, callback: LinchuanCallback): void {
+  discoveryRunning = false
+  tcpRunning = false
+  wsRunning = false
+  callback({ ok: true })
+}
+
+export function manualConnect(options: any, callback: LinchuanCallback): void {
+  const targetIP = options['targetIP'] as string
+  const ping = options['ping']
+  const device = {
+    id: 'manual-' + targetIP,
+    name: '手动设备 ' + targetIP,
+    ip: targetIP,
+    port: ping['port'],
+    wsPort: ping['wsPort'],
+    isOnline: true,
+    isFavorite: false,
+    lastSeen: Date.now()
+  }
+
+  emit('device', device)
+  callback({
+    ok: true,
+    device
+  })
+}
+
+export function sendMessage(options: any, callback: LinchuanCallback): void {
+  const envelope = options['envelope']
+  const message = envelope['payload']
+  message['status'] = 'failed'
+
+  emit('message', message)
+  emit('error', {
+    message: 'Android WebSocket 原生收发入口已预留，需在 UTS 层接入 OkHttp WebSocket 后启用。'
+  })
+
+  callback({
+    ok: false,
+    reason: 'websocket-runtime-not-bound'
+  })
+}
+
+export function sendMessageAck(options: any, callback: LinchuanCallback): void {
+  callback({
+    ok: false,
+    reason: 'websocket-runtime-not-bound'
+  })
+}
+
+export function sendFile(options: any, callback: LinchuanCallback): void {
+  const request = options['request']
+  const transfer = {
+    id: request['fileId'],
+    fileName: request['fileName'],
+    fileSize: request['fileSize'],
+    direction: 'send',
+    status: 'failed',
+    progress: 0,
+    speed: 0,
+    createdAt: Date.now()
+  }
+
+  emit('transfer', transfer)
+  emit('error', {
+    message: 'Android TCP 文件传输入口已预留，需在 UTS 层接入 Socket 分片发送后启用。'
+  })
+
+  callback({
+    ok: false,
+    reason: 'tcp-file-runtime-not-bound'
+  })
+}
+
+export function runDiagnostics(options: any, callback: LinchuanCallback): void {
+  callback({
+    ok: true,
+    localIPs: [],
+    discoveryTargets: lastOptions != null ? ['224.0.0.167'] : [],
+    permissions: {
+      internet: true,
+      accessNetworkState: true,
+      accessWifiState: true,
+      changeWifiMulticastState: true
+    },
+    sockets: {
+      udp: discoveryRunning,
+      tcp: tcpRunning,
+      ws: wsRunning
+    }
+  })
+}
+
+function emit(eventName: string, payload: any): void {
+  const callbacks = eventCallbacks.get(eventName) ?? []
+  callbacks.forEach((callback) => {
+    callback(payload)
+  })
+}

@@ -1,0 +1,75 @@
+import { LinchuanCallback, LinchuanEventCallback } from './interface.uts'
+
+export const __linchuanNetworkPlaceholder = true
+
+let eventCallbacks = new Map<string, Array<LinchuanEventCallback>>()
+
+export function on(eventName: string, callback: LinchuanEventCallback): void {
+  const callbacks = eventCallbacks.get(eventName) ?? []
+  callbacks.push(callback)
+  eventCallbacks.set(eventName, callbacks)
+}
+
+export function startDiscovery(options: any, callback: LinchuanCallback): void {
+  emit('error', {
+    message: '当前平台没有 UDP/TCP 原生实现，请使用 Android App 端运行。'
+  })
+  callback({
+    ok: false,
+    reason: 'platform-not-supported'
+  })
+}
+
+export function stopDiscovery(options: any, callback: LinchuanCallback): void {
+  callback({ ok: true })
+}
+
+export function manualConnect(options: any, callback: LinchuanCallback): void {
+  callback({
+    ok: false,
+    reason: 'platform-not-supported',
+    targetIP: options['targetIP']
+  })
+}
+
+export function sendMessage(options: any, callback: LinchuanCallback): void {
+  callback({
+    ok: false,
+    reason: 'platform-not-supported'
+  })
+}
+
+export function sendMessageAck(options: any, callback: LinchuanCallback): void {
+  callback({
+    ok: false,
+    reason: 'platform-not-supported'
+  })
+}
+
+export function sendFile(options: any, callback: LinchuanCallback): void {
+  callback({
+    ok: false,
+    reason: 'platform-not-supported'
+  })
+}
+
+export function runDiagnostics(options: any, callback: LinchuanCallback): void {
+  callback({
+    ok: true,
+    localIPs: [],
+    discoveryTargets: [],
+    permissions: {},
+    sockets: {
+      udp: false,
+      tcp: false,
+      ws: false
+    }
+  })
+}
+
+function emit(eventName: string, payload: any): void {
+  const callbacks = eventCallbacks.get(eventName) ?? []
+  callbacks.forEach((callback) => {
+    callback(payload)
+  })
+}

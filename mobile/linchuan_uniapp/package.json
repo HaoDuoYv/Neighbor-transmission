@@ -1,0 +1,39 @@
+{
+  "name": "linchuan-uniapp-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "邻传 Android-first uni-app mobile client",
+  "scripts": {
+    "dev:h5": "uni -p h5",
+    "dev:app": "uni -p app",
+    "build:h5": "uni build -p h5",
+    "build:app": "uni build -p app",
+    "test:protocol": "node --test tests/*.mjs"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-alpha-5010220260604001",
+    "@dcloudio/uni-components": "3.0.0-alpha-5010220260604001",
+    "@dcloudio/uni-h5": "3.0.0-alpha-5010220260604001",
+    "pinia": "2.1.7",
+    "vue": "3.5.35"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.31",
+    "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5010220260604001",
+    "typescript": "^5.5.4",
+    "vite": "5.2.8",
+    "vue-tsc": "^2.0.29"
+  },
+  "overrides": {
+    "@vue/compiler-core": "3.5.35",
+    "@vue/compiler-dom": "3.5.35",
+    "@vue/compiler-sfc": "3.5.35",
+    "@vue/compiler-ssr": "3.5.35",
+    "@vue/reactivity": "3.5.35",
+    "@vue/runtime-core": "3.5.35",
+    "@vue/runtime-dom": "3.5.35",
+    "@vue/server-renderer": "3.5.35",
+    "@vue/shared": "3.5.35"
+  }
+}

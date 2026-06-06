@@ -3,7 +3,8 @@ import { EventEmitter } from 'events'
 import { createReadStream, createWriteStream, statSync, existsSync, mkdirSync } from 'fs'
 import { join, basename } from 'path'
 import { generateId } from '../utils/id'
-import { TransferTask } from '../../src/types'
+import { getLocalIP } from '../utils/network'
+import { TransferTask, DiscoveryPing, DiscoveryPong } from '../../src/types'
 
 const TCP_PORT = 12346
 const CHUNK_SIZE = 64 * 1024 // 64KB
@@ -25,10 +26,18 @@ export class FileTransferService extends EventEmitter {
   private activeTransfers: Set<string> = new Set()
   private outgoingSockets: Map<string, Socket> = new Map()
   private savePath: string
+  private deviceId: string
+  private deviceName: string
+  private tcpPort: number
+  private wsPort: number
 
-  constructor(savePath: string) {
+  constructor(savePath: string, deviceId = '', deviceName = '', tcpPort = TCP_PORT, wsPort = 0) {
     super()
     this.savePath = savePath
+    this.deviceId = deviceId
+    this.deviceName = deviceName
+    this.tcpPort = tcpPort
+    this.wsPort = wsPort
     this.server = createServer((socket) => this.handleConnection(socket))
   }
 
@@ -108,6 +117,14 @@ export class FileTransferService extends EventEmitter {
             break
           case 'file-complete':
             this.handleFileComplete(header)
+            buffer = remaining
+            break
+          case 'discovery-ping':
+            this.handleDiscoveryPing(socket, header)
+            buffer = remaining
+            break
+          case 'discovery-pong':
+            this.handleDiscoveryPong(header)
             buffer = remaining
             break
           default:
@@ -318,6 +335,38 @@ export class FileTransferService extends EventEmitter {
     }
 
     return uniqueName
+  }
+
+  /** 收到发现 ping：回复本机信息并通知上层 */
+  private handleDiscoveryPing(socket: Socket, ping: DiscoveryPing) {
+    const pong: DiscoveryPong = {
+      type: 'discovery-pong',
+      deviceId: this.deviceId,
+      deviceName: this.deviceName,
+      ip: getLocalIP(),
+      port: this.tcpPort,
+      wsPort: this.wsPort
+    }
+    socket.write(JSON.stringify(pong) + '\n')
+
+    this.emit('peer:discovered', {
+      deviceId: ping.deviceId,
+      deviceName: ping.deviceName,
+      ip: socket.remoteAddress || ping.ip,
+      port: ping.port,
+      wsPort: ping.wsPort
+    })
+  }
+
+  /** 收到发现 pong：通知上层 */
+  private handleDiscoveryPong(pong: DiscoveryPong) {
+    this.emit('peer:discovered', {
+      deviceId: pong.deviceId,
+      deviceName: pong.deviceName,
+      ip: pong.ip,
+      port: pong.port,
+      wsPort: pong.wsPort
+    })
   }
 
   cancelTransfer(fileId: string) {

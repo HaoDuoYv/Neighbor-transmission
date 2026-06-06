@@ -108,6 +108,46 @@ export interface WsMessage {
   payload: ChatMessage | MessageAck
 }
 
+// 发现协议消息
+export interface DiscoveryPing {
+  type: 'discovery-ping'
+  deviceId: string
+  deviceName: string
+  ip: string
+  port: number
+  wsPort: number
+}
+
+export interface DiscoveryPong {
+  type: 'discovery-pong'
+  deviceId: string
+  deviceName: string
+  ip: string
+  port: number
+  wsPort: number
+}
+
+export type TcpDiscoveryMessage = DiscoveryPing | DiscoveryPong
+
+export type DiagnosticStatus = 'ok' | 'warning' | 'error'
+
+export interface DiagnosticCheck {
+  id: string
+  title: string
+  status: DiagnosticStatus
+  detail: string
+  suggestion?: string
+}
+
+export interface NetworkDiagnosticReport {
+  status: DiagnosticStatus
+  summary: string
+  generatedAt: number
+  localIPs: string[]
+  discoveryTargets: string[]
+  checks: DiagnosticCheck[]
+}
+
 // IPC 事件类型
 export interface IpcEvents {
   'device:online': Device

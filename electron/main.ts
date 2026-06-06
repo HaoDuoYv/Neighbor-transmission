@@ -5,6 +5,7 @@ import { DiscoveryService } from './services/discovery'
 import { FileTransferService } from './services/fileTransfer'
 import { MessagingService } from './services/messaging'
 import { DatabaseService } from './services/database'
+import { runNetworkDiagnostics } from './services/diagnostics'
 import { generateId } from './utils/id'
 import { getLocalIP } from './utils/network'
 
@@ -48,74 +49,105 @@ function createWindow() {
 
 function initServices() {
   // 初始化数据库
-  databaseService = new DatabaseService()
+  try {
+    databaseService = new DatabaseService()
+  } catch (err) {
+    console.error('[Main] 数据库初始化失败:', err)
+  }
 
-  // 初始化消息服务（需要在 discoveryService.start() 之前，因为设备上线时要自动连接 WebSocket）
-  messagingService = new MessagingService(deviceId)
+  // 初始化消息服务
+  try {
+    messagingService = new MessagingService(deviceId)
 
-  messagingService.on('message:received', (message) => {
-    databaseService.insertMessage(message)
-    mainWindow?.webContents.send('message:new', message)
-  })
+    if (databaseService) {
+      messagingService.on('message:received', (message) => {
+        databaseService.insertMessage(message)
+        mainWindow?.webContents.send('message:new', message)
+      })
+      messagingService.on('message:sent', (message) => {
+        databaseService.updateMessageStatus(message.id, 'sent')
+        mainWindow?.webContents.send('message:sent', message)
+      })
+      messagingService.on('message:error', ({ msgId, error }) => {
+        databaseService.updateMessageStatus(msgId, 'failed')
+        mainWindow?.webContents.send('message:error', { msgId, error })
+      })
+    }
 
-  messagingService.on('message:sent', (message) => {
-    databaseService.updateMessageStatus(message.id, 'sent')
-    mainWindow?.webContents.send('message:sent', message)
-  })
-
-  messagingService.on('message:error', ({ msgId, error }) => {
-    databaseService.updateMessageStatus(msgId, 'failed')
-    mainWindow?.webContents.send('message:error', { msgId, error })
-  })
-
-  messagingService.start()
+    messagingService.start()
+  } catch (err) {
+    console.error('[Main] 消息服务初始化失败:', err)
+  }
 
   // 初始化设备发现服务
-  discoveryService = new DiscoveryService(deviceId, deviceName, TCP_PORT, WS_PORT)
+  try {
+    discoveryService = new DiscoveryService(deviceId, deviceName, TCP_PORT, WS_PORT)
 
-  discoveryService.on('device:online', (device) => {
-    databaseService.upsertDevice(device)
-    mainWindow?.webContents.send('device:online', device)
-    // 自动连接 WebSocket
-    messagingService.connectToDevice(device.id, device.ip, device.wsPort)
-  })
+    if (databaseService) {
+      discoveryService.on('device:online', (device) => {
+        databaseService.upsertDevice(device)
+        mainWindow?.webContents.send('device:online', device)
+        messagingService?.connectToDevice(device.id, device.ip, device.wsPort)
+      })
+      discoveryService.on('device:offline', (device) => {
+        databaseService.setDeviceOffline(device.id)
+        mainWindow?.webContents.send('device:offline', device.id)
+      })
+      discoveryService.on('device:update', (device) => {
+        databaseService.upsertDevice(device)
+        mainWindow?.webContents.send('device:update', device)
+      })
+    }
 
-  discoveryService.on('device:offline', (device) => {
-    databaseService.setDeviceOffline(device.id)
-    mainWindow?.webContents.send('device:offline', device.id)
-  })
-
-  discoveryService.on('device:update', (device) => {
-    databaseService.upsertDevice(device)
-    mainWindow?.webContents.send('device:update', device)
-  })
-
-  discoveryService.start()
+    discoveryService.start()
+  } catch (err) {
+    console.error('[Main] 设备发现服务初始化失败:', err)
+  }
 
   // 初始化文件传输服务
-  fileTransferService = new FileTransferService(DEFAULT_SAVE_PATH)
+  try {
+    fileTransferService = new FileTransferService(DEFAULT_SAVE_PATH, deviceId, deviceName, TCP_PORT, WS_PORT)
 
-  fileTransferService.on('transfer:start', (task) => {
-    databaseService.insertTransfer(task)
-    mainWindow?.webContents.send('transfer:progress', task)
-  })
+    if (databaseService) {
+      fileTransferService.on('transfer:start', (task) => {
+        databaseService.insertTransfer(task)
+        mainWindow?.webContents.send('transfer:progress', task)
+      })
+      fileTransferService.on('transfer:progress', (task) => {
+        databaseService.updateTransferStatus(task.id, task.status, task.progress, task.speed)
+        mainWindow?.webContents.send('transfer:progress', task)
+      })
+      fileTransferService.on('transfer:complete', (task) => {
+        databaseService.completeTransfer(task.id, task.filePath || '')
+        mainWindow?.webContents.send('transfer:complete', task)
+      })
+      fileTransferService.on('transfer:error', ({ fileId, error }) => {
+        databaseService.updateTransferStatus(fileId, 'failed')
+        mainWindow?.webContents.send('transfer:error', { fileId, error })
+      })
+      // TCP 发现回退：收到发现消息时添加设备
+      fileTransferService.on('peer:discovered', (info: { deviceId: string; deviceName: string; ip: string; port: number; wsPort: number }) => {
+        const device = {
+          id: info.deviceId,
+          name: info.deviceName,
+          ip: info.ip,
+          port: info.port,
+          wsPort: info.wsPort,
+          isOnline: true,
+          lastSeen: Date.now(),
+          isFavorite: false
+        }
+        discoveryService?.addDevice(device)
+        databaseService.upsertDevice(device)
+        mainWindow?.webContents.send('device:online', device)
+        messagingService?.connectToDevice(device.id, device.ip, device.wsPort)
+      })
+    }
 
-  fileTransferService.on('transfer:progress', (task) => {
-    databaseService.updateTransferStatus(task.id, task.status, task.progress, task.speed)
-    mainWindow?.webContents.send('transfer:progress', task)
-  })
-
-  fileTransferService.on('transfer:complete', (task) => {
-    databaseService.completeTransfer(task.id, task.filePath || '')
-    mainWindow?.webContents.send('transfer:complete', task)
-  })
-
-  fileTransferService.on('transfer:error', ({ fileId, error }) => {
-    databaseService.updateTransferStatus(fileId, 'failed')
-    mainWindow?.webContents.send('transfer:error', { fileId, error })
-  })
-
-  fileTransferService.start()
+    fileTransferService.start()
+  } catch (err) {
+    console.error('[Main] 文件传输服务初始化失败:', err)
+  }
 }
 
 function registerIpcHandlers() {
@@ -140,6 +172,7 @@ function registerIpcHandlers() {
   })
   ipcMain.handle('device:online', () => {
     try {
+      if (!discoveryService) throw new Error('设备发现服务未初始化')
       return discoveryService.getOnlineDevices()
     } catch (err) {
       throw new Error(`获取在线设备失败: ${(err as Error).message}`)
@@ -156,6 +189,33 @@ function registerIpcHandlers() {
     } catch (err) {
       throw new Error(`收藏设备失败: ${(err as Error).message}`)
     }
+  })
+  ipcMain.handle('device:info', () => {
+    try {
+      return {
+        deviceId,
+        deviceName,
+        localIP: getLocalIP(),
+        tcpPort: TCP_PORT,
+        wsPort: WS_PORT
+      }
+    } catch {
+      return { deviceId: '', deviceName: '未知', localIP: '127.0.0.1', tcpPort: TCP_PORT, wsPort: WS_PORT }
+    }
+  })
+  ipcMain.handle('device:ping', async (_, targetIP: string) => {
+    if (!discoveryService) {
+      return { success: false, error: '设备发现服务未初始化' }
+    }
+    try {
+      await discoveryService.pingDevice(targetIP, TCP_PORT, WS_PORT)
+      return { success: true }
+    } catch (err) {
+      return { success: false, error: (err as Error).message }
+    }
+  })
+  ipcMain.handle('network:diagnostics', () => {
+    return runNetworkDiagnostics()
   })
 
   // 消息相关
@@ -259,7 +319,11 @@ function registerIpcHandlers() {
 
 app.whenReady().then(() => {
   createWindow()
-  initServices()
+  try {
+    initServices()
+  } catch (err) {
+    console.error('[Main] 服务初始化失败:', err)
+  }
   registerIpcHandlers()
 
   app.on('activate', () => {

@@ -26,8 +26,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import Sidebar from '@/components/Sidebar.vue'
+import { useDeviceStore } from '@/stores/device'
+import { useChatStore } from '@/stores/chat'
+import { useTransferStore } from '@/stores/transfer'
+
+const deviceStore = useDeviceStore()
+const chatStore = useChatStore()
+const transferStore = useTransferStore()
 
 function minimize() {
   window.electronAPI?.minimizeWindow()
@@ -39,11 +46,61 @@ function closeWindow() {
   window.electronAPI?.closeWindow()
 }
 
+const unsubscribers: (() => void)[] = []
+
 onMounted(() => {
   const saved = localStorage.getItem('linchuan-theme')
   if (saved) {
     document.documentElement.setAttribute('data-theme', saved)
   }
+
+  // 订阅设备事件
+  unsubscribers.push(
+    window.electronAPI.onDeviceOnline((device: any) => {
+      deviceStore.addDevice(device)
+    }),
+    window.electronAPI.onDeviceOffline((deviceId: string) => {
+      deviceStore.setDeviceOffline(deviceId)
+    }),
+    window.electronAPI.onDeviceUpdate((device: any) => {
+      deviceStore.updateDevice(device)
+    })
+  )
+
+  // 订阅消息事件
+  unsubscribers.push(
+    window.electronAPI.onMessageReceived((message: any) => {
+      chatStore.addMessage(message)
+    }),
+    window.electronAPI.onMessageSent((message: any) => {
+      chatStore.updateMessageStatus(message.id, message.status)
+    }),
+    window.electronAPI.onMessageError(({ msgId }: any) => {
+      chatStore.updateMessageStatus(msgId, 'failed')
+    })
+  )
+
+  // 订阅传输事件
+  unsubscribers.push(
+    window.electronAPI.onTransferProgress((task: any) => {
+      transferStore.addTransfer(task)
+    }),
+    window.electronAPI.onTransferComplete((task: any) => {
+      transferStore.addTransfer(task)
+    }),
+    window.electronAPI.onTransferError(({ fileId }: any) => {
+      const transfer = transferStore.transfers.find(t => t.id === fileId)
+      if (transfer) transfer.status = 'failed'
+    })
+  )
+
+  // 初始加载
+  deviceStore.fetchDevices()
+  transferStore.fetchTransfers()
+})
+
+onBeforeUnmount(() => {
+  unsubscribers.forEach(fn => fn())
 })
 </script>
 
@@ -104,6 +161,7 @@ onMounted(() => {
   color: var(--text-tertiary);
   cursor: pointer;
   transition: all 0.15s;
+  -webkit-app-region: no-drag;
 }
 
 .win-btn:hover {

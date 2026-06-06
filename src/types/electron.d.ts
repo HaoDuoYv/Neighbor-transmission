@@ -1,9 +1,39 @@
+interface DeviceInfo {
+  deviceId: string
+  deviceName: string
+  localIP: string
+  tcpPort: number
+  wsPort: number
+}
+
+type DiagnosticStatus = 'ok' | 'warning' | 'error'
+
+interface DiagnosticCheck {
+  id: string
+  title: string
+  status: DiagnosticStatus
+  detail: string
+  suggestion?: string
+}
+
+interface NetworkDiagnosticReport {
+  status: DiagnosticStatus
+  summary: string
+  generatedAt: number
+  localIPs: string[]
+  discoveryTargets: string[]
+  checks: DiagnosticCheck[]
+}
+
 interface ElectronAPI {
   // 设备相关
   getDevices: () => Promise<any[]>
   getOnlineDevices: () => Promise<any[]>
   setDeviceName: (name: string) => Promise<void>
   toggleFavorite: (deviceId: string, isFavorite: boolean) => Promise<void>
+  getDeviceInfo: () => Promise<DeviceInfo>
+  pingDevice: (targetIP: string) => Promise<{ success: boolean }>
+  runNetworkDiagnostics: () => Promise<NetworkDiagnosticReport>
 
   // 消息相关
   sendMessage: (toDevice: string, type: string, content: string, metadata?: Record<string, unknown>) => Promise<any>

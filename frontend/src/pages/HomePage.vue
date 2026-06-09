@@ -41,7 +41,7 @@ const projectNotice = {
   links: [
     {
       label: 'GitHub 项目地址',
-      href: 'https://github.com/HaoDuoYv/websocket_chat'
+      href: 'https://github.com/HaoDuoYv/Neighbor-transmission'
     }
   ]
 }

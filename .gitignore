@@ -24,6 +24,7 @@ AGENTS.md
 *.swo
 *~
 .superpowers/
+.worktrees/
 docs/
 backend/data/chat.db
 backend/uploads/

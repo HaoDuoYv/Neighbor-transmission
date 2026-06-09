@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow, shell } from 'electron'
+import { app, ipcMain, BrowserWindow, shell, session } from 'electron'
 import { createWindow, createTray } from './window-manager'
 import { startServer, stopServer, getServerPort } from './process-manager'
 import { getDiscoveredServers, startDiscovery, stopDiscovery } from './discovery'
@@ -19,7 +19,51 @@ function writeConfig(data: Record<string, unknown>): void {
   fs.writeFileSync(configPath, JSON.stringify(data, null, 2), 'utf-8')
 }
 
+function registerWebviewPopupHandling(): void {
+  const hiddenPopupWindows = new WeakSet<BrowserWindow>()
+
+  app.on('web-contents-created', (_event, contents) => {
+    if (contents.getType() !== 'webview') return
+
+    contents.setWindowOpenHandler(() => ({
+      action: 'allow',
+      overrideBrowserWindowOptions: {
+        show: false,
+        skipTaskbar: true,
+        width: 1,
+        height: 1,
+        title: 'download',
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+        },
+      },
+    }))
+
+    contents.on('did-create-window', (childWindow) => {
+      hiddenPopupWindows.add(childWindow)
+      setTimeout(() => {
+        if (!childWindow.isDestroyed()) {
+          childWindow.close()
+        }
+      }, 120000)
+    })
+  })
+
+  session.defaultSession.on('will-download', (_event, item, webContents) => {
+    const ownerWindow = BrowserWindow.fromWebContents(webContents)
+    if (!ownerWindow || !hiddenPopupWindows.has(ownerWindow)) return
+
+    item.once('done', () => {
+      if (!ownerWindow.isDestroyed()) {
+        ownerWindow.close()
+      }
+    })
+  })
+}
+
 app.whenReady().then(async () => {
+  registerWebviewPopupHandling()
   createWindow()
   createTray()
   startDiscovery()

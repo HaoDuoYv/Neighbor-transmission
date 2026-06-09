@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { setServerBaseUrl, isElectron } from '@/api/server-config'
 import { getDiscoveredServers, startLocalServer, type DiscoveredServer } from '@/api/discovery'
@@ -17,8 +17,27 @@ const isConnecting = ref(false)
 const isStarting = ref(false)
 const errorMsg = ref('')
 const lastServer = ref<{ ip: string; port: number; alias: string } | null>(null)
+const startupSteps = ['检查上次连接', '启动本机服务', '准备进入登录']
+const startupStepIndex = ref(0)
+const startupStatusText = computed(() => startupSteps[startupStepIndex.value])
 
 let scanTimer: ReturnType<typeof setInterval> | null = null
+let startupStatusTimer: ReturnType<typeof setInterval> | null = null
+
+function startStartupStatusTimer() {
+  startupStepIndex.value = 0
+  if (startupStatusTimer) clearInterval(startupStatusTimer)
+  startupStatusTimer = setInterval(() => {
+    startupStepIndex.value = (startupStepIndex.value + 1) % startupSteps.length
+  }, 1500)
+}
+
+function stopStartupStatusTimer() {
+  if (startupStatusTimer) {
+    clearInterval(startupStatusTimer)
+    startupStatusTimer = null
+  }
+}
 
 onMounted(async () => {
   if (isElectron()) {
@@ -41,10 +60,12 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (scanTimer) clearInterval(scanTimer)
+  stopStartupStatusTimer()
 })
 
 async function autoStartAndRedirect() {
   isStarting.value = true
+  startStartupStatusTimer()
   errorMsg.value = ''
 
   try {
@@ -57,6 +78,7 @@ async function autoStartAndRedirect() {
         const res = await fetch(`${url}/api/discovery/health`, { signal: AbortSignal.timeout(2000) })
         if (res.ok) {
           setServerBaseUrl(url)
+          stopStartupStatusTimer()
           router.replace('/login')
           return
         }
@@ -69,6 +91,7 @@ async function autoStartAndRedirect() {
       if (res.ok) {
         setServerBaseUrl('http://localhost:8081')
         localStorage.setItem('lastServer', JSON.stringify({ ip: 'localhost', port: 8081, alias: '本机服务器' }))
+        stopStartupStatusTimer()
         router.replace('/login')
         return
       }
@@ -76,6 +99,7 @@ async function autoStartAndRedirect() {
 
     // 自动连接失败，显示选择界面
     isStarting.value = false
+    stopStartupStatusTimer()
     const savedLast = localStorage.getItem('lastServer')
     if (savedLast) {
       try { lastServer.value = JSON.parse(savedLast) } catch {}
@@ -84,6 +108,7 @@ async function autoStartAndRedirect() {
     scanTimer = setInterval(scanServers, 5000)
   } catch {
     isStarting.value = false
+    stopStartupStatusTimer()
     await scanServers()
     scanTimer = setInterval(scanServers, 5000)
   }
@@ -123,6 +148,7 @@ async function connectManual() {
 async function createServer() {
   const name = serverName.value.trim() || `${getHostname()}的服务器`
   isStarting.value = true
+  startStartupStatusTimer()
   errorMsg.value = ''
 
   try {
@@ -138,6 +164,7 @@ async function createServer() {
   } catch (e: any) {
     errorMsg.value = e.message || '启动服务器失败'
   }
+  stopStartupStatusTimer()
   isStarting.value = false
 }
 
@@ -174,14 +201,36 @@ function stopJoinAndGoBack() {
     </div>
 
     <!-- 启动中 -->
-    <div v-if="isStarting && !isConnecting" class="relative z-10 text-center">
-      <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-        <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
-          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-        </svg>
+    <div v-if="isStarting && !isConnecting" class="startup-shell relative z-10 w-full max-w-sm px-6 text-center">
+      <div class="startup-mark mx-auto">
+        <div class="startup-orbit startup-orbit-one">
+          <span></span>
+        </div>
+        <div class="startup-orbit startup-orbit-two">
+          <span></span>
+        </div>
+        <div class="startup-orbit startup-orbit-three">
+          <span></span>
+        </div>
+        <div class="startup-core">
+          <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <path d="M8 10h8"/>
+            <path d="M8 14h5"/>
+          </svg>
+        </div>
       </div>
-      <h1 class="text-xl font-semibold text-white">WebSocket Chat</h1>
-      <p class="text-gray-500 text-sm mt-2">正在启动服务器...</p>
+
+      <div class="mt-8">
+        <p class="text-[11px] font-medium uppercase tracking-[0.35em] text-white/35">Local service</p>
+        <h1 class="mt-3 text-2xl font-semibold tracking-wide text-white">WebSocket Chat</h1>
+        <p class="mt-3 min-h-[1.25rem] text-sm text-white/70">{{ startupStatusText }}</p>
+        <p class="mt-1 text-xs text-white/35">正在准备聊天环境，请稍候</p>
+      </div>
+
+      <div class="startup-progress mt-8">
+        <span></span>
+      </div>
     </div>
 
     <!-- 主界面 -->
@@ -384,3 +433,108 @@ function stopJoinAndGoBack() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.startup-shell {
+  animation: startup-enter 520ms ease-out both;
+}
+
+.startup-mark {
+  position: relative;
+  width: 132px;
+  height: 132px;
+}
+
+.startup-core {
+  position: absolute;
+  inset: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.startup-orbit {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  animation: startup-orbit 3.6s linear infinite;
+}
+
+.startup-orbit span {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 999px;
+  background: #f8fafc;
+  box-shadow: 0 0 22px rgba(248, 250, 252, 0.72);
+}
+
+.startup-orbit-two {
+  inset: 12px;
+  animation-duration: 4.8s;
+  animation-direction: reverse;
+}
+
+.startup-orbit-two span {
+  background: #22c55e;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.72);
+}
+
+.startup-orbit-three {
+  inset: 24px;
+  animation-duration: 2.9s;
+}
+
+.startup-orbit-three span {
+  background: #60a5fa;
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.72);
+}
+
+.startup-progress {
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.startup-progress span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.86), transparent);
+  animation: startup-progress 1.6s ease-in-out infinite;
+}
+
+@keyframes startup-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes startup-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes startup-progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+</style>

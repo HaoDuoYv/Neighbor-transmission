@@ -1840,7 +1840,7 @@ const isRoomReadByOthers = (roomId: string): boolean => {
       </div>
 
       <!-- 联系人列表 -->
-      <div v-else class="flex-1 overflow-y-auto">
+      <div v-if="activeTab === 'contacts'" class="flex-1 overflow-y-auto">
         <!-- 局域网服务器发现 (桌面端) -->
         <div v-if="isElectron()" class="px-5 pt-4 pb-2">
           <div class="flex items-center justify-between mb-2">

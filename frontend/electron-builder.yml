@@ -1,0 +1,25 @@
+appId: com.websocket-chat.desktop
+productName: WebSocket Chat
+directories:
+  output: ../electron-output
+  buildResources: build
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - "!node_modules/**/*"
+extraResources:
+  - from: "../backend/target/websocketChatServer.jar"
+    to: "backend/websocketChatServer.jar"
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: WebSocket Chat
+publish: null

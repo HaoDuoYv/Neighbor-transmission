@@ -1,0 +1,17 @@
+/// <reference types="vite/client" />
+
+interface ElectronAPI {
+  getDiscoveredServers: () => Promise<any[]>
+  startLocalServer: () => Promise<{ success: boolean; port?: number; error?: string }>
+  stopLocalServer: () => Promise<void>
+  minimizeToTray: () => Promise<void>
+  closeApp: () => Promise<void>
+  getCloseBehavior: () => Promise<string | null>
+  setCloseBehavior: (behavior: string) => Promise<void>
+  onShowCloseDialog: (callback: () => void) => void
+  sendCloseDialogResult: (choice: { action: string; remember: boolean }) => void
+}
+
+interface Window {
+  electronAPI?: ElectronAPI
+}

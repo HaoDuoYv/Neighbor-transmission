@@ -29,6 +29,8 @@ const toast = useToast()
 
 const PROJECT_NOTICE_STORAGE_KEY = 'project-notice-dismissed'
 const ACTIVE_TAB_STORAGE_KEY = 'home-active-tab'
+const REMOTE_TRANSFER_URL = 'https://filehelper.weixin.qq.com/'
+type HomeActiveTab = 'messages' | 'contacts' | 'remote-transfer'
 const projectNotice = {
   title: '关于本项目',
   summary: '基于 WebSocket 的即时通讯与协作平台，支持私聊群聊、AI助手、协作编辑、五子棋对弈等功能。',
@@ -119,7 +121,15 @@ const uploadProgress = ref(0)
 const uploadingFileName = ref('')
 let dragDepth = 0
 
-const activeTab = ref<'messages' | 'contacts'>((localStorage.getItem(ACTIVE_TAB_STORAGE_KEY) as 'messages' | 'contacts') || 'messages')
+const getStoredActiveTab = (): HomeActiveTab => {
+  const stored = localStorage.getItem(ACTIVE_TAB_STORAGE_KEY)
+  return stored === 'contacts' || stored === 'remote-transfer' ? stored : 'messages'
+}
+
+const activeTab = ref<HomeActiveTab>(getStoredActiveTab())
+const remoteTransferWebviewRef = ref<{ reload?: () => void } | null>(null)
+const remoteTransferLoadError = ref('')
+const canEmbedRemoteTransfer = computed(() => isElectron())
 const searchQuery = ref('')
 const confirmDialog = ref({
   isOpen: false,
@@ -163,6 +173,45 @@ function onRemoveAssistant(assistantId: string) {
   if (!selectedRoomId.value) return
   if (!confirm('从群里移除该智能体？')) return
   removeAssistantFromRoom(selectedRoomId.value, assistantId)
+}
+
+function selectPrimaryTab(tab: HomeActiveTab) {
+  activeTab.value = tab
+  localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, tab)
+  if (tab === 'remote-transfer') {
+    selectedRoomId.value = null
+    showChatMenu.value = false
+    showMemberList.value = false
+    showSidebar.value = false
+    isDraggingFile.value = false
+    dragDepth = 0
+  }
+}
+
+async function openRemoteTransferExternal() {
+  try {
+    await window.electronAPI?.openExternal?.(REMOTE_TRANSFER_URL)
+  } catch {
+    window.open(REMOTE_TRANSFER_URL, '_blank', 'noopener,noreferrer')
+    return
+  }
+
+  if (!window.electronAPI?.openExternal) {
+    window.open(REMOTE_TRANSFER_URL, '_blank', 'noopener,noreferrer')
+  }
+}
+
+function refreshRemoteTransfer() {
+  remoteTransferLoadError.value = ''
+  remoteTransferWebviewRef.value?.reload?.()
+}
+
+function handleRemoteTransferLoad() {
+  remoteTransferLoadError.value = ''
+}
+
+function handleRemoteTransferLoadError() {
+  remoteTransferLoadError.value = '内嵌页面加载失败，可以刷新重试或外部打开。'
 }
 
 // 局域网服务器发现
@@ -896,10 +945,10 @@ const handleContactClick = (targetUser: { userId: string; username: string }) =>
   )
   if (existingPrivateRoom) {
     selectedRoomId.value = existingPrivateRoom.id
-    activeTab.value = 'messages'
+    selectPrimaryTab('messages')
   } else {
     startPrivateChat(targetUser.userId)
-    activeTab.value = 'messages'
+    selectPrimaryTab('messages')
   }
 }
 
@@ -1467,7 +1516,7 @@ const isRoomReadByOthers = (roomId: string): boolean => {
       <!-- 导航按钮 - 极简线条 -->
       <nav class="flex-1 flex flex-col gap-2">
         <button
-          @click="activeTab = 'messages'"
+          @click="selectPrimaryTab('messages')"
           class="w-10 h-10 flex items-center justify-center transition-all duration-200 rounded-xl btn-press relative"
           :class="activeTab === 'messages' ? (isDarkTheme ? 'bg-white/10 text-white shadow-sm' : 'bg-[#18181B] text-white shadow-md') : (isDarkTheme ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100')"
         >
@@ -1478,7 +1527,7 @@ const isRoomReadByOthers = (roomId: string): boolean => {
         </button>
 
         <button
-          @click="activeTab = 'contacts'"
+          @click="selectPrimaryTab('contacts')"
           class="w-10 h-10 flex items-center justify-center transition-all duration-200 rounded-xl btn-press"
           :class="activeTab === 'contacts' ? (isDarkTheme ? 'bg-white/10 text-white shadow-sm' : 'bg-[#18181B] text-white shadow-md') : (isDarkTheme ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100')"
         >
@@ -1487,6 +1536,21 @@ const isRoomReadByOthers = (roomId: string): boolean => {
             <circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </button>
+
+        <button
+          @click="selectPrimaryTab('remote-transfer')"
+          class="w-10 h-10 flex items-center justify-center transition-all duration-200 rounded-xl btn-press"
+          :class="activeTab === 'remote-transfer' ? (isDarkTheme ? 'bg-white/10 text-white shadow-sm' : 'bg-[#18181B] text-white shadow-md') : (isDarkTheme ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100')"
+          title="远程传输"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 16l3-3-3-3"/>
+            <path d="M8 8l-3 3 3 3"/>
+            <path d="M19 13H5"/>
+            <path d="M12 3v4"/>
+            <path d="M12 17v4"/>
           </svg>
         </button>
 
@@ -1583,9 +1647,10 @@ const isRoomReadByOthers = (roomId: string): boolean => {
       <header class="px-5 py-5 border-b" :class="isDarkTheme ? 'border-gray-800' : 'border-gray-50'">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-sm font-medium tracking-wide uppercase" :class="isDarkTheme ? 'text-gray-200' : 'text-gray-900'">
-            {{ activeTab === 'messages' ? '消息' : '联系人' }}
+            {{ activeTab === 'messages' ? '消息' : activeTab === 'contacts' ? '联系人' : '远程传输' }}
           </h1>
           <button
+            v-if="activeTab !== 'remote-transfer'"
             @click="handleCreateGroup"
             class="w-7 h-7 flex items-center justify-center transition-colors"
             :class="isDarkTheme ? 'text-gray-500 hover:text-white' : 'text-gray-400 hover:text-[#18181B]'"
@@ -1598,7 +1663,7 @@ const isRoomReadByOthers = (roomId: string): boolean => {
         </div>
 
         <!-- 搜索框 - 极简边框 -->
-        <div class="relative">
+        <div v-if="activeTab !== 'remote-transfer'" class="relative">
           <input
             v-model="searchQuery"
             type="text"
@@ -1608,6 +1673,28 @@ const isRoomReadByOthers = (roomId: string): boolean => {
           />
         </div>
       </header>
+
+      <div v-if="activeTab === 'remote-transfer'" class="flex-1 px-3 py-3">
+        <button
+          type="button"
+          class="w-full border px-4 py-3 text-left transition-colors"
+          :class="isDarkTheme ? 'border-gray-800 bg-gray-800 text-gray-100' : 'border-gray-100 bg-gray-50 text-gray-800'"
+        >
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#07C160] text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <path d="M7 10l5 5 5-5"/>
+                <path d="M12 15V3"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium">微信文件传输助手</p>
+              <p class="mt-0.5 truncate text-xs" :class="isDarkTheme ? 'text-gray-500' : 'text-gray-400'">内嵌远程传输</p>
+            </div>
+          </div>
+        </button>
+      </div>
 
       <!-- AI助手列表 -->
       <div v-if="activeTab === 'messages'" class="px-3 py-2 border-b" :class="isDarkTheme ? 'border-gray-800' : 'border-gray-100'">
@@ -1889,13 +1976,80 @@ const isRoomReadByOthers = (roomId: string): boolean => {
     >
       <div
         class="flex-1 flex flex-col min-w-0"
-        @dragenter="handleDragEnter"
-        @dragover="handleDragOver"
-        @dragleave="handleDragLeave"
-        @drop="handleDropUpload"
+        @dragenter="activeTab !== 'remote-transfer' && handleDragEnter($event)"
+        @dragover="activeTab !== 'remote-transfer' && handleDragOver($event)"
+        @dragleave="activeTab !== 'remote-transfer' && handleDragLeave($event)"
+        @drop="activeTab !== 'remote-transfer' && handleDropUpload($event)"
       >
+      <div v-if="activeTab === 'remote-transfer'" class="flex min-h-0 flex-1 flex-col">
+        <header class="border-b px-6 py-4" :class="isDarkTheme ? 'border-gray-800' : 'border-gray-50'">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h1 class="text-sm font-medium" :class="isDarkTheme ? 'text-gray-200' : 'text-gray-800'">远程传输</h1>
+              <p class="mt-1 text-xs" :class="isDarkTheme ? 'text-gray-500' : 'text-gray-400'">微信文件传输助手</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="h-8 px-3 text-xs transition-colors"
+                :class="isDarkTheme ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'"
+                @click="refreshRemoteTransfer"
+              >
+                刷新
+              </button>
+              <button
+                type="button"
+                class="h-8 bg-[#18181B] px-3 text-xs text-white transition-colors hover:bg-[#27272A]"
+                @click="openRemoteTransferExternal"
+              >
+                外部打开
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="min-h-0 flex-1 p-4">
+          <webview
+            v-if="canEmbedRemoteTransfer"
+            ref="remoteTransferWebviewRef"
+            :src="REMOTE_TRANSFER_URL"
+            class="h-full w-full border"
+            :class="isDarkTheme ? 'border-gray-800 bg-[#18181B]' : 'border-gray-100 bg-white'"
+            allowpopups
+            @did-finish-load="handleRemoteTransferLoad"
+            @did-fail-load="handleRemoteTransferLoadError"
+          />
+          <div
+            v-else
+            class="flex h-full items-center justify-center border"
+            :class="isDarkTheme ? 'border-gray-800 text-gray-400' : 'border-gray-100 text-gray-500'"
+          >
+            <div class="max-w-sm text-center">
+              <p class="text-sm font-medium">当前环境不支持内嵌远程传输</p>
+              <p class="mt-2 text-xs leading-5 opacity-70">微信文件传输助手限制普通网页 iframe 嵌入，请使用桌面端内嵌，或在浏览器中打开。</p>
+              <button
+                type="button"
+                class="mt-4 bg-[#18181B] px-4 py-2 text-xs text-white transition-colors hover:bg-[#27272A]"
+                @click="openRemoteTransferExternal"
+              >
+                外部打开
+              </button>
+            </div>
+          </div>
+
+          <div
+            v-if="remoteTransferLoadError"
+            class="mt-3 flex items-center justify-between gap-3 border px-3 py-2 text-xs"
+            :class="isDarkTheme ? 'border-red-900/40 bg-red-950/20 text-red-200' : 'border-red-100 bg-red-50 text-red-600'"
+          >
+            <span>{{ remoteTransferLoadError }}</span>
+            <button type="button" class="shrink-0 underline underline-offset-2" @click="refreshRemoteTransfer">重试</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 未选择房间时的欢迎界面 -->
-      <div v-if="!selectedRoomId" class="flex-1 flex items-center justify-center">
+      <div v-else-if="!selectedRoomId" class="flex-1 flex items-center justify-center">
         <div class="text-center">
           <div class="w-16 h-16 bg-[#18181B] flex items-center justify-center mx-auto mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">

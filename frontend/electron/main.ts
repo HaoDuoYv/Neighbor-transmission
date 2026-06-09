@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow } from 'electron'
+import { app, ipcMain, BrowserWindow, shell } from 'electron'
 import { createWindow, createTray } from './window-manager'
 import { startServer, stopServer, getServerPort } from './process-manager'
 import { getDiscoveredServers, startDiscovery, stopDiscovery } from './discovery'
@@ -48,6 +48,14 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('config:set-close-behavior', (_event, behavior: string) => {
     writeConfig({ ...readConfig(), closeBehavior: behavior })
+  })
+
+  ipcMain.handle('shell:open-external', async (_event, url: string) => {
+    const target = new URL(url)
+    if (!['http:', 'https:'].includes(target.protocol)) {
+      throw new Error('Unsupported external URL protocol')
+    }
+    await shell.openExternal(target.toString())
   })
 
   ipcMain.handle('window:minimize-to-tray', () => {})

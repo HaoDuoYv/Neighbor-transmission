@@ -6,6 +6,7 @@ interface ElectronAPI {
   stopLocalServer: () => Promise<void>
   minimizeToTray: () => Promise<void>
   closeApp: () => Promise<void>
+  openExternal: (url: string) => Promise<void>
   getCloseBehavior: () => Promise<string | null>
   setCloseBehavior: (behavior: string) => Promise<void>
   onShowCloseDialog: (callback: () => void) => void

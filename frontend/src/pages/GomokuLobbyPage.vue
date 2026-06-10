@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useGomokuWebSocket } from '@/composables/useGomokuWebSocket'
 import type { GomokuRoom } from '@/composables/useGomokuWebSocket'
 import { useEditorWebSocket } from '@/composables/useEditorWebSocket'
 import type { EditorRoom } from '@/composables/useEditorWebSocket'
 
 const router = useRouter()
+const route = useRoute()
 const isDark = ref(localStorage.getItem('theme') === 'dark')
 
 // Gomoku WebSocket
@@ -188,6 +189,11 @@ watch(editorJoinedDocId, (docId) => {
 })
 
 onMounted(() => {
+  if (route.query.type === 'editor') {
+    newRoomType.value = 'editor'
+    selectedRoomType.value = 'editor'
+  }
+
   const stored = localStorage.getItem('user')
   if (!stored) {
     router.push('/login')

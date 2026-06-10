@@ -132,15 +132,14 @@
         >
           关闭
         </button>
-        <a
+        <button
           v-if="app?.url"
-          :href="app.url"
-          target="_blank"
-          rel="noopener noreferrer"
+          type="button"
+          @click="handleOpen"
           class="flex-1 px-4 py-2.5 bg-[#18181B] text-white text-sm font-medium rounded-xl hover:bg-[#27272A] transition-colors text-center"
         >
           {{ app.go || '前往' }}
-        </a>
+        </button>
       </div>
     </div>
   </div>
@@ -162,6 +161,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   close: []
+  open: [url: string]
 }>()
 
 const mdHtml = ref('')
@@ -194,6 +194,11 @@ watch(
 
 function handleClose() {
   emit('close')
+}
+
+function handleOpen() {
+  if (!props.app?.url) return
+  emit('open', props.app.url)
 }
 
 function handleKeydown(e: KeyboardEvent) {

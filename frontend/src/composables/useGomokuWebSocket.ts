@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from 'vue'
+import { getWsUrl } from '@/api/server-config'
 
 export interface GomokuPlayer {
   userId: string
@@ -144,7 +145,7 @@ export function useGomokuWebSocket() {
     myUserId.value = userId
     myUsername.value = username
 
-    socket.value = new WebSocket('/ws/gomoku')
+    socket.value = new WebSocket(getWsUrl('/ws/gomoku'))
 
     socket.value.onopen = () => {
       console.log('Gomoku WebSocket connected')

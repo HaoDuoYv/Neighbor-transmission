@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { setServerBaseUrl, isElectron } from '@/api/server-config'
 import { getDiscoveredServers, startLocalServer, type DiscoveredServer } from '@/api/discovery'
+import { buildServerUrl, formatServerAddress, parseOptionalPort, parseRequiredPort } from '@/utils/serverEndpoint'
 
 const router = useRouter()
 
@@ -10,13 +11,14 @@ const router = useRouter()
 const mode = ref<'choose' | 'create' | 'join'>('choose')
 const servers = ref<DiscoveredServer[]>([])
 const manualIp = ref('')
-const manualPort = ref('8081')
+const manualPort = ref('')
 const serverName = ref('')
+const serverPort = ref('8081')
 const isScanning = ref(false)
 const isConnecting = ref(false)
 const isStarting = ref(false)
 const errorMsg = ref('')
-const lastServer = ref<{ ip: string; port: number; alias: string } | null>(null)
+const lastServer = ref<{ ip: string; port?: number; alias: string } | null>(null)
 const startupSteps = ['检查上次连接', '启动本机服务', '准备进入登录']
 const startupStepIndex = ref(0)
 const startupStatusText = computed(() => startupSteps[startupStepIndex.value])
@@ -74,7 +76,7 @@ async function autoStartAndRedirect() {
     if (saved) {
       try {
         const last = JSON.parse(saved)
-        const url = `http://${last.ip}:${last.port}`
+        const url = buildServerUrl(last.ip, last.port)
         const res = await fetch(`${url}/api/discovery/health`, { signal: AbortSignal.timeout(2000) })
         if (res.ok) {
           setServerBaseUrl(url)
@@ -122,41 +124,54 @@ async function scanServers() {
   isScanning.value = false
 }
 
-async function connectToServer(ip: string, port: number, alias?: string) {
+async function connectToServer(ip: string, port?: number, alias?: string) {
   isConnecting.value = true
   errorMsg.value = ''
-  const url = `http://${ip}:${port}`
+  const address = formatServerAddress(ip, port)
+  const url = buildServerUrl(ip, port)
 
   try {
     const res = await fetch(`${url}/api/discovery/health`, { signal: AbortSignal.timeout(3000) })
     if (!res.ok) throw new Error('Server not healthy')
 
     setServerBaseUrl(url)
-    localStorage.setItem('lastServer', JSON.stringify({ ip, port, alias: alias || `${ip}:${port}` }))
+    localStorage.setItem('lastServer', JSON.stringify({ ip, ...(port === undefined ? {} : { port }), alias: alias || address }))
     router.push('/login')
   } catch {
-    errorMsg.value = `无法连接到 ${ip}:${port}`
+    errorMsg.value = `无法连接到 ${address}`
   }
   isConnecting.value = false
 }
 
 async function connectManual() {
-  const port = parseInt(manualPort.value) || 8081
-  await connectToServer(manualIp.value, port)
+  try {
+    const port = parseOptionalPort(manualPort.value)
+    await connectToServer(manualIp.value.trim(), port)
+  } catch (e: any) {
+    errorMsg.value = e.message || '端口号无效'
+  }
 }
 
 async function createServer() {
   const name = serverName.value.trim() || `${getHostname()}的服务器`
+  let port: number
+  try {
+    port = parseRequiredPort(serverPort.value, 8081)
+  } catch (e: any) {
+    errorMsg.value = e.message || '端口号无效'
+    return
+  }
+
   isStarting.value = true
   startStartupStatusTimer()
   errorMsg.value = ''
 
   try {
-    const result = await startLocalServer(name)
+    const result = await startLocalServer(name, port)
     if (result.success) {
-      const port = result.port || 8081
-      setServerBaseUrl(`http://localhost:${port}`)
-      localStorage.setItem('lastServer', JSON.stringify({ ip: 'localhost', port, alias: name }))
+      const activePort = result.port || port
+      setServerBaseUrl(buildServerUrl('localhost', activePort))
+      localStorage.setItem('lastServer', JSON.stringify({ ip: 'localhost', port: activePort, alias: name }))
       router.push('/login')
     } else {
       errorMsg.value = result.error || '启动服务器失败'
@@ -271,7 +286,7 @@ function stopJoinAndGoBack() {
             <div class="min-w-0">
               <div class="text-[11px] font-medium uppercase tracking-[0.22em] text-indigo-200/60">继续连接</div>
               <div class="mt-1 truncate text-sm font-semibold text-white">{{ lastServer.alias }}</div>
-              <div class="mt-0.5 text-xs text-slate-400">{{ lastServer.ip }}:{{ lastServer.port }}</div>
+              <div class="mt-0.5 text-xs text-slate-400">{{ formatServerAddress(lastServer.ip, lastServer.port) }}</div>
             </div>
           </div>
           <span class="action-arrow">连接</span>
@@ -349,6 +364,15 @@ function stopJoinAndGoBack() {
           />
           <p class="mt-2 text-xs text-slate-500">其他用户将在局域网列表中看到此名称</p>
 
+          <label class="field-label mt-5">端口号</label>
+          <input
+            v-model="serverPort"
+            placeholder="8081"
+            class="connection-input"
+            @keydown.enter="createServer"
+          />
+          <p class="mt-2 text-xs text-slate-500">默认 8081，可按需要指定 1-65535 之间的端口</p>
+
           <button
             @click="createServer"
             :disabled="isStarting"
@@ -394,7 +418,7 @@ function stopJoinAndGoBack() {
                 </div>
                 <div class="min-w-0">
                   <div class="truncate text-sm font-medium text-white">{{ server.alias }}</div>
-                  <div class="text-xs text-slate-500">{{ server.ip }}:{{ server.port }}</div>
+                  <div class="text-xs text-slate-500">{{ formatServerAddress(server.ip, server.port) }}</div>
                 </div>
               </div>
               <div class="flex items-center gap-2">
@@ -419,7 +443,7 @@ function stopJoinAndGoBack() {
             <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
             <span class="text-sm font-medium text-slate-200">手动连接</span>
           </div>
-          <div class="grid gap-2 sm:grid-cols-[1fr_88px_auto]">
+          <div class="grid gap-2 sm:grid-cols-[1fr_128px_auto]">
             <input
               v-model="manualIp"
               placeholder="IP 地址"
@@ -427,7 +451,7 @@ function stopJoinAndGoBack() {
             />
             <input
               v-model="manualPort"
-              placeholder="端口"
+              placeholder="端口（可选）"
               class="connection-input sm:px-3"
             />
             <button

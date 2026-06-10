@@ -61,7 +61,7 @@ export const appsConfig: AppConfig[] = [
     title: '协作编辑器',
     subtitle: '多人实时协同编码',
     text: '基于 Yjs CRDT 的实时协作代码编辑器，支持 HTML/CSS/JS 预览',
-    url: '/gomoku',
+    url: '/gomoku?type=editor',
     show: true,
     techStack: ['CodeMirror 6', 'Yjs', 'WebSocket'],
     usageScenario: '实时协作编码与前端预览',

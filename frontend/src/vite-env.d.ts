@@ -2,7 +2,7 @@
 
 interface ElectronAPI {
   getDiscoveredServers: () => Promise<any[]>
-  startLocalServer: () => Promise<{ success: boolean; port?: number; error?: string }>
+  startLocalServer: (serverName?: string, port?: number) => Promise<{ success: boolean; port?: number; error?: string }>
   stopLocalServer: () => Promise<void>
   minimizeToTray: () => Promise<void>
   closeApp: () => Promise<void>

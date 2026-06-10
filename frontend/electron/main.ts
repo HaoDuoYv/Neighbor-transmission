@@ -72,9 +72,9 @@ app.whenReady().then(async () => {
     return getDiscoveredServers()
   })
 
-  ipcMain.handle('server:start', async (_event, serverName?: string) => {
+  ipcMain.handle('server:start', async (_event, serverName?: string, port?: number) => {
     try {
-      await startServer(serverName)
+      await startServer(serverName, port)
       return { success: true, port: getServerPort() }
     } catch (e: any) {
       return { success: false, error: e.message }

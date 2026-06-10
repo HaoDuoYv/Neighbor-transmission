@@ -4,7 +4,7 @@ import fs from 'fs'
 import { app } from 'electron'
 
 let jarProcess: ChildProcess | null = null
-const SERVER_PORT = 8081
+let serverPort = 8081
 
 function getJarPath(): string {
   if (process.env.NODE_ENV === 'development') {
@@ -29,15 +29,17 @@ function getDataDir(): string {
 }
 
 export function getServerPort(): number {
-  return SERVER_PORT
+  return serverPort
 }
 
-export function startServer(serverName?: string): Promise<void> {
+export function startServer(serverName?: string, port = 8081): Promise<void> {
   return new Promise((resolve, reject) => {
     if (jarProcess) {
       resolve()
       return
     }
+
+    serverPort = port
 
     const jarPath = getJarPath()
     const javaCmd = getJrePath()
@@ -54,7 +56,7 @@ export function startServer(serverName?: string): Promise<void> {
 
     const args = [
       '-jar', jarPath,
-      `--server.port=${SERVER_PORT}`,
+      `--server.port=${serverPort}`,
       `--spring.datasource.url=jdbc:sqlite:${path.join(dataDir, 'data', 'chat.db')}`,
       `--local.local-url=${path.join(dataDir, 'uploads')}`,
       `--logging.file.name=${path.join(dataDir, 'logs', 'application.log')}`,

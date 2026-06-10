@@ -1,5 +1,6 @@
 import { ref, onUnmounted } from 'vue'
 import { mergeUpdates } from 'yjs'
+import { getWsUrl } from '@/api/server-config'
 
 export interface EditorParticipant {
   userId: string
@@ -84,7 +85,7 @@ export function useEditorWebSocket() {
       connectTimeoutTimer = null
     }
 
-    socket.value = new WebSocket('/ws/editor')
+    socket.value = new WebSocket(getWsUrl('/ws/editor'))
 
     socket.value.onopen = () => {
       isConnected.value = true

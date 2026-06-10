@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getDiscoveredServers: () => ipcRenderer.invoke('discovery:get-servers'),
-  startLocalServer: (serverName?: string) => ipcRenderer.invoke('server:start', serverName),
+  startLocalServer: (serverName?: string, port?: number) => ipcRenderer.invoke('server:start', serverName, port),
   stopLocalServer: () => ipcRenderer.invoke('server:stop'),
   minimizeToTray: () => ipcRenderer.invoke('window:minimize-to-tray'),
   closeApp: () => ipcRenderer.invoke('window:close'),

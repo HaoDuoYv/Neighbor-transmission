@@ -14,6 +14,7 @@ const error = ref('')
 const selectedApp = ref<AppConfig | null>(null)
 const isDetailOpen = ref(false)
 const isDark = ref(localStorage.getItem('theme') === 'dark')
+const ACTIVE_TAB_STORAGE_KEY = 'home-active-tab'
 
 async function fetchApps() {
   isLoading.value = true
@@ -46,6 +47,7 @@ function closeDetail() {
 function openUrl(url: string) {
   if (!url) return
   if (url.startsWith('/')) {
+    localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, 'messages')
     router.push(url)
   } else {
     window.open(url, '_blank', 'noopener,noreferrer')
@@ -53,6 +55,7 @@ function openUrl(url: string) {
 }
 
 function goBack() {
+  localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, 'messages')
   router.push('/login')
 }
 
@@ -212,6 +215,7 @@ onMounted(fetchApps)
       :app="selectedApp"
       :is-dark="isDark"
       @close="closeDetail"
+      @open="(url) => { closeDetail(); openUrl(url) }"
     />
   </div>
 </template>

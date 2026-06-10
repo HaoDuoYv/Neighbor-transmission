@@ -22,8 +22,9 @@ import { emojiCategories } from '@/config/emojis'
 import MentionInput from '@/components/MentionInput.vue'
 import MentionNotification from '@/components/MentionNotification.vue'
 import AssistantPicker from '@/components/AssistantPicker.vue'
-import { getDiscoveredServers, type DiscoveredServer } from '@/api/discovery'
+import { getDiscoveredServers, stopLocalServer, type DiscoveredServer } from '@/api/discovery'
 import { setServerBaseUrl, isElectron, resolveUrl, getApiUrl } from '@/api/server-config'
+import { buildServerUrl, formatServerAddress, parseOptionalPort } from '@/utils/serverEndpoint'
 
 const toast = useToast()
 
@@ -217,7 +218,7 @@ function handleRemoteTransferLoadError() {
 // 局域网服务器发现
 const discoveredServers = ref<DiscoveredServer[]>([])
 const manualServerIp = ref('')
-const manualServerPort = ref('8081')
+const manualServerPort = ref('')
 const isScanningServers = ref(false)
 const isConnectingServer = ref(false)
 let serverScanTimer: ReturnType<typeof setInterval> | null = null
@@ -236,25 +237,30 @@ async function connectToDiscoveredServer(server: DiscoveredServer) {
 }
 
 async function connectToManualServer() {
-  const port = parseInt(manualServerPort.value) || 8081
-  await switchToServer(manualServerIp.value, port)
+  try {
+    const port = parseOptionalPort(manualServerPort.value)
+    await switchToServer(manualServerIp.value.trim(), port)
+  } catch (e: any) {
+    alert(e.message || '端口号无效')
+  }
 }
 
-async function switchToServer(ip: string, port: number) {
+async function switchToServer(ip: string, port?: number) {
   isConnectingServer.value = true
-  const url = `http://${ip}:${port}`
+  const address = formatServerAddress(ip, port)
+  const url = buildServerUrl(ip, port)
   try {
     const res = await fetch(`${url}/api/discovery/health`, { signal: AbortSignal.timeout(3000) })
     if (!res.ok) throw new Error('Server not healthy')
     setServerBaseUrl(url)
-    localStorage.setItem('lastServer', JSON.stringify({ ip, port, alias: `${ip}:${port}` }))
+    localStorage.setItem('lastServer', JSON.stringify({ ip, ...(port === undefined ? {} : { port }), alias: address }))
     // 断开当前连接并重新连接
     disconnect()
     if (user.value) {
       setTimeout(() => connect(user.value, user.value.token), 500)
     }
   } catch {
-    alert(`无法连接到 ${ip}:${port}`)
+    alert(`无法连接到 ${address}`)
   }
   isConnectingServer.value = false
 }
@@ -1073,6 +1079,32 @@ const handleLogout = () => {
   selectedRoomId.value = null
 }
 
+const handleExitServer = async () => {
+  clearPendingAttachments()
+  stopUserRemarkAutoRefresh()
+  disconnect()
+  localStorage.removeItem('user')
+  localStorage.removeItem('lastServer')
+  localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, 'messages')
+  setServerBaseUrl('')
+  user.value = null
+  userRemarks.value = {}
+  remarkTarget.value = null
+  isRemarkDialogOpen.value = false
+  rooms.value = []
+  onlineUsers.value = []
+  selectedRoomId.value = null
+  activeTab.value = 'messages'
+
+  if (isElectron()) {
+    try {
+      await stopLocalServer()
+    } catch {}
+  }
+
+  router.replace('/')
+}
+
 const handleAvatarClick = (data: { userId: string; username: string; avatarUrl?: string }) => {
   selectedUserProfile.value = data
   isUserProfileDialogOpen.value = true
@@ -1628,9 +1660,25 @@ const isRoomReadByOthers = (roomId: string): boolean => {
         </button>
 
         <button
+          @click="handleExitServer"
+          class="w-10 h-10 flex items-center justify-center transition-colors"
+          :class="isDarkTheme ? 'text-sky-300 hover:text-sky-200' : 'text-sky-600 hover:text-sky-700'"
+          title="退出服务器"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="6" rx="2"/>
+            <rect x="3" y="14" width="18" height="6" rx="2"/>
+            <path d="M7 7h.01"/>
+            <path d="M7 17h.01"/>
+            <path d="M15 12l4 4-4 4"/>
+          </svg>
+        </button>
+
+        <button
           @click="handleLogout"
           class="w-10 h-10 flex items-center justify-center transition-colors"
           :class="isDarkTheme ? 'text-white hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'"
+          title="退出登录"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -1862,7 +1910,7 @@ const isRoomReadByOthers = (roomId: string): boolean => {
               <div class="flex items-center justify-between">
                 <div>
                   <div class="font-medium" :class="isDarkTheme ? 'text-gray-200' : 'text-gray-700'">{{ server.alias }}</div>
-                  <div :class="isDarkTheme ? 'text-gray-500' : 'text-gray-400'">{{ server.ip }}:{{ server.port }}</div>
+                  <div :class="isDarkTheme ? 'text-gray-500' : 'text-gray-400'">{{ formatServerAddress(server.ip, server.port) }}</div>
                 </div>
                 <div class="text-[11px]" :class="isDarkTheme ? 'text-gray-500' : 'text-gray-400'">
                   {{ server.userCount }} 人
@@ -1884,8 +1932,8 @@ const isRoomReadByOthers = (roomId: string): boolean => {
             />
             <input
               v-model="manualServerPort"
-              placeholder="端口"
-              class="w-16 px-2.5 py-1.5 rounded-lg text-xs border focus:outline-none"
+              placeholder="端口可选"
+              class="w-20 px-2.5 py-1.5 rounded-lg text-xs border focus:outline-none"
               :class="isDarkTheme ? 'bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-700 placeholder-gray-400'"
             />
             <button

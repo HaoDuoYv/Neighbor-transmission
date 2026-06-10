@@ -24,10 +24,10 @@ export async function getDiscoveredServers(): Promise<DiscoveredServer[]> {
 /**
  * 启动本地 Spring Boot 服务器
  */
-export async function startLocalServer(serverName?: string): Promise<{ success: boolean; port?: number; error?: string }> {
+export async function startLocalServer(serverName?: string, port?: number): Promise<{ success: boolean; port?: number; error?: string }> {
   const electronAPI = (window as any).electronAPI
   if (!electronAPI) return { success: false, error: 'Not in Electron environment' }
-  return electronAPI.startLocalServer(serverName)
+  return electronAPI.startLocalServer(serverName, port)
 }
 
 /**

@@ -27,6 +27,7 @@ export function createWindow(): BrowserWindow {
     minWidth: 800,
     minHeight: 600,
     title: 'WebSocket Chat',
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -34,6 +35,7 @@ export function createWindow(): BrowserWindow {
       webviewTag: true,
     },
   })
+  mainWindow.setMenu(null)
 
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:3000')

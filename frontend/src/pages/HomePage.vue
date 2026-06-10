@@ -128,6 +128,7 @@ const getStoredActiveTab = (): HomeActiveTab => {
 }
 
 const activeTab = ref<HomeActiveTab>(getStoredActiveTab())
+const remoteTransferMounted = ref(activeTab.value === 'remote-transfer')
 const remoteTransferWebviewRef = ref<{ reload?: () => void } | null>(null)
 const remoteTransferLoadError = ref('')
 const canEmbedRemoteTransfer = computed(() => isElectron())
@@ -180,6 +181,7 @@ function selectPrimaryTab(tab: HomeActiveTab) {
   activeTab.value = tab
   localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, tab)
   if (tab === 'remote-transfer') {
+    remoteTransferMounted.value = true
     selectedRoomId.value = null
     showChatMenu.value = false
     showMemberList.value = false
@@ -2029,7 +2031,11 @@ const isRoomReadByOthers = (roomId: string): boolean => {
         @dragleave="activeTab !== 'remote-transfer' && handleDragLeave($event)"
         @drop="activeTab !== 'remote-transfer' && handleDropUpload($event)"
       >
-      <div v-if="activeTab === 'remote-transfer'" class="flex min-h-0 flex-1 flex-col">
+      <div
+        v-if="remoteTransferMounted"
+        class="min-h-0 flex-1 flex-col"
+        :class="activeTab === 'remote-transfer' ? 'flex' : 'hidden'"
+      >
         <header class="border-b px-6 py-4" :class="isDarkTheme ? 'border-gray-800' : 'border-gray-50'">
           <div class="flex items-center justify-between gap-4">
             <div>
@@ -2061,6 +2067,7 @@ const isRoomReadByOthers = (roomId: string): boolean => {
             v-if="canEmbedRemoteTransfer"
             ref="remoteTransferWebviewRef"
             :src="REMOTE_TRANSFER_URL"
+            partition="persist:wechat-filehelper"
             class="h-full w-full border"
             :class="isDarkTheme ? 'border-gray-800 bg-[#18181B]' : 'border-gray-100 bg-white'"
             allowpopups
